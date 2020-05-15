@@ -92,7 +92,7 @@ public class SignupPage extends AppCompatActivity {
 									
 									data.put("Chats", null);
 							
-									db.collection("User").document(userID).set(data);
+									db.collection("Users").document(userID).set(data);
 									
 									Toast.makeText(context, "Account created.",
 											Toast.LENGTH_SHORT).show();

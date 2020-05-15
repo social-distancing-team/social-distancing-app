@@ -92,7 +92,7 @@ public class UserPage extends AppCompatActivity {
 	}
 	
 	private void getChats(String uid){
-		CollectionReference collectionReference = db.collection("User").document(uid).collection("Chats");
+		CollectionReference collectionReference = db.collection("Users").document(uid).collection("Chats");
 		collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 			@Override
 			public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -120,7 +120,7 @@ public class UserPage extends AppCompatActivity {
 			
 			Log.d("", chatID + " , " + friendID);
 			
-			DocumentReference docRef = db.collection("User").document(friendID);
+			DocumentReference docRef = db.collection("Users").document(friendID);
 			docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 				@Override
 				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -401,7 +401,7 @@ public class UserPage extends AppCompatActivity {
 	}
 	
 	private void getFriends(String uid){
-		DocumentReference docRef = db.collection("User").document(uid);
+		DocumentReference docRef = db.collection("Users").document(uid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 			@Override
 			public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -417,7 +417,7 @@ public class UserPage extends AppCompatActivity {
 	
 	private void addFriends(ArrayList<String> friends_uid){
 		for (String friend_uid : friends_uid) {
-			DocumentReference documentReference = db.collection("User").document(friend_uid);
+			DocumentReference documentReference = db.collection("Users").document(friend_uid);
 			
 			documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 				@Override
@@ -469,7 +469,7 @@ public class UserPage extends AppCompatActivity {
 	
 	
 	private void getProfileInformation(final String uid){
-		DocumentReference documentReference = db.collection("User").document(uid);
+		DocumentReference documentReference = db.collection("Users").document(uid);
 		documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 			@Override
 			public void onComplete(@NonNull Task<DocumentSnapshot> task) {
