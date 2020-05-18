@@ -11,18 +11,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.social_distancing.app.test"></activity>
-        <activity android:name="com.social_distancing.app.UserPage" >
-
-        </activity>
-        <activity android:name="com.social_distancing.app.SignupPage" />
-        <activity android:name="com.social_distancing.app.LoginPage">
+        <activity android:name=".Test_Intents"></activity>
+        <activity android:name=".PasswordResetActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".TesterActivity">
+
+        </activity>
+        <activity android:name=".UserPage" />
+        <activity android:name=".SignupPage" />
+        <activity android:name=".LoginPage" />
 
         <uses-library
             android:name="org.apache.http.legacy"

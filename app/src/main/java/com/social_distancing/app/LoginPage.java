@@ -74,7 +74,7 @@ public class LoginPage extends AppCompatActivity {
 		
 		emailEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 		emailEditText.setHint("user@address.com");
-		emailEditText.setText("username@email.com");
+		emailEditText.setText("test@account.com");
 		//emailEditText.setWidth(0);
 		emailEditText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 		
@@ -97,6 +97,7 @@ public class LoginPage extends AppCompatActivity {
 		paswordLabel.setText("Password: ");
 		passwordLayout.addView(paswordLabel);
 		passwordLayout.addView(passwordEditText);
+		passwordEditText.setText("testaccount");
 		
 		LinearLayout loginLayout = new LinearLayout(this);
 		loginLayout.setOrientation(LinearLayout.VERTICAL);

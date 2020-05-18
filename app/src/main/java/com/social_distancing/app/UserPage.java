@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -40,6 +41,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
+import com.google.android.gms.tasks.Continuation;
 
 public class UserPage extends AppCompatActivity {
 	
@@ -226,6 +230,8 @@ public class UserPage extends AppCompatActivity {
 		}
 	}
 	
+	
+	
 	private void getChatMessages(final String uid, final String cid){
 		DocumentReference docRef = db.collection("Chat").document(cid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -408,7 +414,7 @@ public class UserPage extends AppCompatActivity {
 				if (task.isSuccessful()){
 					DocumentSnapshot documentSnapshot = task.getResult();
 					ArrayList<String> friends_uid = (ArrayList<String>)documentSnapshot.get("Friends");
-					Log.d("", friends_uid.get(0));
+					//Log.d("", friends_uid.get(0));
 					addFriends(friends_uid);
 				}
 			}
@@ -488,7 +494,23 @@ public class UserPage extends AppCompatActivity {
 		});
 	}
 	
-	
+	private void addFriend(final String frienduid){
+		final DocumentReference documentReference = db.collection("Users").document(mAuth.getCurrentUser().getUid().toString());
+		Task<DocumentSnapshot> documentSnapshotTask = documentReference.get();
+		documentSnapshotTask.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+			@Override
+			public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+				if (task.isSuccessful()){
+					DocumentSnapshot documentSnapshot = task.getResult();
+					Map<String, Object> data = new HashMap<>();
+					data.put("Friends", FieldValue.arrayUnion(frienduid));
+					documentReference.update(data);
+				}
+			}
+		});
+		
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -538,6 +560,17 @@ public class UserPage extends AppCompatActivity {
 			public void onTabSelected(TabLayout.Tab tab) {
 				insertMessageLayout.setVisibility(View.GONE);
 				parentLinearLayout.removeAllViews();
+				
+				LayoutInflater layoutInflater = LayoutInflater.from(context);
+				View linearLayout = (View)layoutInflater.inflate(R.layout.testlayout, null, false);
+				Button button = (Button)linearLayout.findViewById(R.id.button5);
+				button.setText("NNIIIIGGGGG");
+				//parentLinearLayout.addView(linearLayout);
+				
+				if (true){
+					//return;
+				}
+				
 				switch (tab.getPosition()) {
 					case 0:
 						parentLinearLayout.addView(linearLayout1);
@@ -590,5 +623,14 @@ public class UserPage extends AppCompatActivity {
 		
 		userIDEditText.setText(mAuth.getUid().toString());
 		
+		
+		final Button addFriendButton = (Button)findViewById(R.id.addFriendButton);
+		final TextView userIDAddFriendEditText = (TextView)findViewById(R.id.userIDAddFriendEditText);
+		addFriendButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				addFriend(userIDAddFriendEditText.getText().toString());
+			}
+		});
 	}
 }
