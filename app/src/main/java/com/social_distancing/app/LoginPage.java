@@ -27,7 +27,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginPage extends AppCompatActivity {
 	
 	final Context context = this;
-	RequestQueue queue;
+	// RequestQueue queue;
 	FirebaseAuth mAuth;
 	
 	@Override

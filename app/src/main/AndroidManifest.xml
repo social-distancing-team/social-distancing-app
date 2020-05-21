@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".Test_Intents"></activity>
-        <activity android:name=".PasswordResetActivity">
+        <activity android:name=".LoginPage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +24,7 @@
         </activity>
         <activity android:name=".UserPage" />
         <activity android:name=".SignupPage" />
-        <activity android:name=".LoginPage" />
+        <activity android:name=".PasswordResetActivity" />
 
         <uses-library
             android:name="org.apache.http.legacy"

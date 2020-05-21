@@ -23,10 +23,16 @@ import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -36,6 +42,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+// import com.google.gson.JsonObject;
+// import com.google.gson.JsonArray;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,12 +62,16 @@ public class UserPage extends AppCompatActivity {
 	FirebaseAuth mAuth;
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	Context context = this;
-	
+
+	RequestQueue mQueue;
+
 	//////////////
 	
 	EditText userIDEditText;
 	
 	TextView fullnameTextView;
+	TextView mmTextView;
+	Button button3;
 	Button friendsButton;
 	Button chatsButton;
 	Button listsButton;
@@ -215,6 +231,7 @@ public class UserPage extends AppCompatActivity {
 								@Override
 								public void onClick(View v) {
 									getChatMessages(firstName, chatID);
+									testRestAPI(mAuth, mQueue);
 								}
 							});
 							
@@ -230,8 +247,8 @@ public class UserPage extends AppCompatActivity {
 		}
 	}
 	
-	
-	
+
+
 	private void getChatMessages(final String uid, final String cid){
 		DocumentReference docRef = db.collection("Chat").document(cid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -472,8 +489,7 @@ public class UserPage extends AppCompatActivity {
 			});
 		}
 	}
-	
-	
+
 	private void getProfileInformation(final String uid){
 		DocumentReference documentReference = db.collection("Users").document(uid);
 		documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -486,6 +502,7 @@ public class UserPage extends AppCompatActivity {
 						String lastName = (String)documentSnapshot.get("LastName");
 						myName = firstName;
 						fullnameTextView.setText(firstName + " " + lastName);
+						mmTextView.setText("Blargh");
 						getFriends(uid);
 						getChats(uid);
 					}
@@ -508,7 +525,50 @@ public class UserPage extends AppCompatActivity {
 				}
 			}
 		});
-		
+
+	}
+
+
+	private void testRestAPI(FirebaseAuth mAuth, final RequestQueue mQueue){
+		FirebaseUser mUser = mAuth.getCurrentUser();
+		mUser.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+			@Override
+			public void onComplete(@NonNull Task<GetTokenResult> task) {
+				if (task.isSuccessful()) {
+					final String IdToken = task.getResult().getToken();
+					// TODO API request, including IdToken in Header
+					String url = "https://10.0.0.6:8000/users";
+					JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+							new Response.Listener<JSONObject>() {
+								@Override
+								public void onResponse(JSONObject response) {
+									try {
+										JSONArray jsonArray = response.getJSONArray("Users");
+										TextView contentTextView = new TextView(context);
+										contentTextView.setText(jsonArray.toString());
+									} catch (JSONException e) {
+										e.printStackTrace();
+									}
+								}
+							}, new Response.ErrorListener() {
+								@Override
+								public void onErrorResponse(VolleyError error) {
+									error.printStackTrace();
+								}
+							}) {
+								@Override
+								public Map<String, String> getHeaders() {
+									Map<String, String> params = new HashMap<String, String>();
+									params.put("JWT", IdToken);
+									return params;
+								}
+							};
+					mQueue.add(request);
+				} else {
+					task.getException();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -517,12 +577,16 @@ public class UserPage extends AppCompatActivity {
 
 		mAuth = FirebaseAuth.getInstance();
 		final FirebaseUser currentUser = mAuth.getCurrentUser();
-		
+
+		RequestQueue mQueue = VolleySingleton.getInstance(this).getRequestQueue();
+
 		setContentView(R.layout.activity_user_page);
 		
 		userIDEditText = (EditText) findViewById(R.id.userIDEditText);
 		
 		fullnameTextView = (TextView)findViewById(R.id.fullnameTextView);
+		mmTextView = (TextView)findViewById(R.id.mmTextView);
+		button3 = (Button)findViewById(R.id.button3);
 		friendsButton = (Button)findViewById(R.id.friendsButton);
 		chatsButton = (Button)findViewById(R.id.chatsButton);
 		listsButton = (Button)findViewById(R.id.listsButton);
@@ -560,17 +624,17 @@ public class UserPage extends AppCompatActivity {
 			public void onTabSelected(TabLayout.Tab tab) {
 				insertMessageLayout.setVisibility(View.GONE);
 				parentLinearLayout.removeAllViews();
-				
+
 				LayoutInflater layoutInflater = LayoutInflater.from(context);
 				View linearLayout = (View)layoutInflater.inflate(R.layout.testlayout, null, false);
 				Button button = (Button)linearLayout.findViewById(R.id.button5);
 				button.setText("NNIIIIGGGGG");
 				//parentLinearLayout.addView(linearLayout);
-				
+
 				if (true){
 					//return;
 				}
-				
+
 				switch (tab.getPosition()) {
 					case 0:
 						parentLinearLayout.addView(linearLayout1);
@@ -596,7 +660,8 @@ public class UserPage extends AppCompatActivity {
 		});
 		
 		linearLayout2.removeAllViews();
-		
+
+
 		if (mAuth.getCurrentUser() == null){
 			Log.d("", "LOGGING IN");
 			mAuth.signInWithEmailAndPassword("username@email.com", "username").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -623,7 +688,7 @@ public class UserPage extends AppCompatActivity {
 		
 		userIDEditText.setText(mAuth.getUid().toString());
 		
-		
+
 		final Button addFriendButton = (Button)findViewById(R.id.addFriendButton);
 		final TextView userIDAddFriendEditText = (TextView)findViewById(R.id.userIDAddFriendEditText);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
