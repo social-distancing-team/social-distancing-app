@@ -70,7 +70,7 @@ public class UserPage extends AppCompatActivity {
 	EditText userIDEditText;
 	
 	TextView fullnameTextView;
-	TextView mmTextView;
+	TextView textView3;
 	Button button3;
 	Button friendsButton;
 	Button chatsButton;
@@ -231,7 +231,6 @@ public class UserPage extends AppCompatActivity {
 								@Override
 								public void onClick(View v) {
 									getChatMessages(firstName, chatID);
-									testRestAPI(mAuth, mQueue);
 								}
 							});
 							
@@ -502,7 +501,6 @@ public class UserPage extends AppCompatActivity {
 						String lastName = (String)documentSnapshot.get("LastName");
 						myName = firstName;
 						fullnameTextView.setText(firstName + " " + lastName);
-						mmTextView.setText("Blargh");
 						getFriends(uid);
 						getChats(uid);
 					}
@@ -528,41 +526,39 @@ public class UserPage extends AppCompatActivity {
 
 	}
 
-
-	private void testRestAPI(FirebaseAuth mAuth, final RequestQueue mQueue){
+	// An example of calling the RestAPI on the server
+	private void testRestAPI(){
 		FirebaseUser mUser = mAuth.getCurrentUser();
 		mUser.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
 			@Override
 			public void onComplete(@NonNull Task<GetTokenResult> task) {
 				if (task.isSuccessful()) {
 					final String IdToken = task.getResult().getToken();
+					Log.i("MMDEBUG_testRestAPI_IdToken", IdToken.toString());
 					// TODO API request, including IdToken in Header
-					String url = "https://10.0.0.6:8000/users";
+					String url = "http://<!--TODO enter your IP address to allow testing RestAPI on locally running server-->:8000/api/messages/list/";
 					JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
 							new Response.Listener<JSONObject>() {
 								@Override
 								public void onResponse(JSONObject response) {
-									try {
-										JSONArray jsonArray = response.getJSONArray("Users");
-										TextView contentTextView = new TextView(context);
-										contentTextView.setText(jsonArray.toString());
-									} catch (JSONException e) {
-										e.printStackTrace();
-									}
+									// JSONArray jsonArray = response.getJSONObject("Users");
+									Log.i("MMDEBUG_testRestAPI_response", response.toString());
+									// textView3.setText(jsonArray.toString());
 								}
 							}, new Response.ErrorListener() {
-								@Override
-								public void onErrorResponse(VolleyError error) {
-									error.printStackTrace();
-								}
-							}) {
-								@Override
-								public Map<String, String> getHeaders() {
-									Map<String, String> params = new HashMap<String, String>();
-									params.put("JWT", IdToken);
-									return params;
-								}
-							};
+						@Override
+						public void onErrorResponse(VolleyError error) {
+							Log.i("MMDEBUG_testRestAPI_error", error.toString());
+							// error.printStackTrace();
+						}
+					}) {
+						@Override
+						public Map<String, String> getHeaders() {
+							Map<String, String> headers = new HashMap<String, String>();
+							headers.put("Authorization", "JWT " + IdToken);
+							return headers;
+						}
+					};
 					mQueue.add(request);
 				} else {
 					task.getException();
@@ -578,14 +574,14 @@ public class UserPage extends AppCompatActivity {
 		mAuth = FirebaseAuth.getInstance();
 		final FirebaseUser currentUser = mAuth.getCurrentUser();
 
-		RequestQueue mQueue = VolleySingleton.getInstance(this).getRequestQueue();
+		mQueue = VolleySingleton.getInstance(this).getRequestQueue();
 
 		setContentView(R.layout.activity_user_page);
 		
 		userIDEditText = (EditText) findViewById(R.id.userIDEditText);
 		
 		fullnameTextView = (TextView)findViewById(R.id.fullnameTextView);
-		mmTextView = (TextView)findViewById(R.id.mmTextView);
+		textView3 = (TextView)findViewById(R.id.textView3);
 		button3 = (Button)findViewById(R.id.button3);
 		friendsButton = (Button)findViewById(R.id.friendsButton);
 		chatsButton = (Button)findViewById(R.id.chatsButton);
@@ -697,5 +693,7 @@ public class UserPage extends AppCompatActivity {
 				addFriend(userIDAddFriendEditText.getText().toString());
 			}
 		});
+
+		testRestAPI();
 	}
 }
