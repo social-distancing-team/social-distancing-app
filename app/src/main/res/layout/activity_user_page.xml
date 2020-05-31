@@ -238,10 +238,10 @@
                         android:visibility="visible">
 
                         <TextView
-                            android:id="@+id/textView5"
+                            android:id="@+id/mmTextView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="TextView2" />
+                            android:text="mm" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/chatsRecyclerView"

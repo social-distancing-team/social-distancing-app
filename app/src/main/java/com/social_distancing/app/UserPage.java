@@ -23,10 +23,16 @@ import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -36,6 +42,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+// import com.google.gson.JsonObject;
+// import com.google.gson.JsonArray;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,12 +62,16 @@ public class UserPage extends AppCompatActivity {
 	FirebaseAuth mAuth;
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	Context context = this;
-	
+
+	RequestQueue mQueue;
+
 	//////////////
 	
 	EditText userIDEditText;
 	
 	TextView fullnameTextView;
+	TextView textView3;
+	Button button3;
 	Button friendsButton;
 	Button chatsButton;
 	Button listsButton;
@@ -230,8 +246,8 @@ public class UserPage extends AppCompatActivity {
 		}
 	}
 	
-	
-	
+
+
 	private void getChatMessages(final String uid, final String cid){
 		DocumentReference docRef = db.collection("Chat").document(cid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -472,8 +488,7 @@ public class UserPage extends AppCompatActivity {
 			});
 		}
 	}
-	
-	
+
 	private void getProfileInformation(final String uid){
 		DocumentReference documentReference = db.collection("Users").document(uid);
 		documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -508,7 +523,48 @@ public class UserPage extends AppCompatActivity {
 				}
 			}
 		});
-		
+
+	}
+
+	// An example of calling the RestAPI on the server
+	private void testRestAPI(){
+		FirebaseUser mUser = mAuth.getCurrentUser();
+		mUser.getIdToken(true).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+			@Override
+			public void onComplete(@NonNull Task<GetTokenResult> task) {
+				if (task.isSuccessful()) {
+					final String IdToken = task.getResult().getToken();
+					Log.i("MMDEBUG_testRestAPI_IdToken", IdToken.toString());
+					// TODO API request, including IdToken in Header
+					String url = "http://<!--TODO enter your IP address to allow testing RestAPI on locally running server-->:8000/api/messages/list/";
+					JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+							new Response.Listener<JSONObject>() {
+								@Override
+								public void onResponse(JSONObject response) {
+									// JSONArray jsonArray = response.getJSONObject("Users");
+									Log.i("MMDEBUG_testRestAPI_response", response.toString());
+									// textView3.setText(jsonArray.toString());
+								}
+							}, new Response.ErrorListener() {
+						@Override
+						public void onErrorResponse(VolleyError error) {
+							Log.i("MMDEBUG_testRestAPI_error", error.toString());
+							// error.printStackTrace();
+						}
+					}) {
+						@Override
+						public Map<String, String> getHeaders() {
+							Map<String, String> headers = new HashMap<String, String>();
+							headers.put("Authorization", "JWT " + IdToken);
+							return headers;
+						}
+					};
+					mQueue.add(request);
+				} else {
+					task.getException();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -517,12 +573,16 @@ public class UserPage extends AppCompatActivity {
 
 		mAuth = FirebaseAuth.getInstance();
 		final FirebaseUser currentUser = mAuth.getCurrentUser();
-		
+
+		mQueue = VolleySingleton.getInstance(this).getRequestQueue();
+
 		setContentView(R.layout.activity_user_page);
 		
 		userIDEditText = (EditText) findViewById(R.id.userIDEditText);
 		
 		fullnameTextView = (TextView)findViewById(R.id.fullnameTextView);
+		textView3 = (TextView)findViewById(R.id.textView3);
+		button3 = (Button)findViewById(R.id.button3);
 		friendsButton = (Button)findViewById(R.id.friendsButton);
 		chatsButton = (Button)findViewById(R.id.chatsButton);
 		listsButton = (Button)findViewById(R.id.listsButton);
@@ -560,17 +620,17 @@ public class UserPage extends AppCompatActivity {
 			public void onTabSelected(TabLayout.Tab tab) {
 				insertMessageLayout.setVisibility(View.GONE);
 				parentLinearLayout.removeAllViews();
-				
+
 				LayoutInflater layoutInflater = LayoutInflater.from(context);
 				View linearLayout = (View)layoutInflater.inflate(R.layout.testlayout, null, false);
 				Button button = (Button)linearLayout.findViewById(R.id.button5);
 				button.setText("NNIIIIGGGGG");
 				//parentLinearLayout.addView(linearLayout);
-				
+
 				if (true){
 					//return;
 				}
-				
+
 				switch (tab.getPosition()) {
 					case 0:
 						parentLinearLayout.addView(linearLayout1);
@@ -596,7 +656,8 @@ public class UserPage extends AppCompatActivity {
 		});
 		
 		linearLayout2.removeAllViews();
-		
+
+
 		if (mAuth.getCurrentUser() == null){
 			Log.d("", "LOGGING IN");
 			mAuth.signInWithEmailAndPassword("username@email.com", "username").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -623,7 +684,7 @@ public class UserPage extends AppCompatActivity {
 		
 		userIDEditText.setText(mAuth.getUid().toString());
 		
-		
+
 		final Button addFriendButton = (Button)findViewById(R.id.addFriendButton);
 		final TextView userIDAddFriendEditText = (TextView)findViewById(R.id.userIDAddFriendEditText);
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -632,5 +693,7 @@ public class UserPage extends AppCompatActivity {
 				addFriend(userIDAddFriendEditText.getText().toString());
 			}
 		});
+
+		testRestAPI();
 	}
 }
