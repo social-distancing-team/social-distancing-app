@@ -11,17 +11,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Test_Intents"></activity>
-        <activity android:name=".PasswordResetActivity">
+        <activity android:name=".HomeTest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TesterActivity">
+        <activity android:name=".UserManagement">
 
         </activity>
+        <activity android:name=".ViewUserProfile"></activity>
+        <activity android:name=".bottomnavigationdrawer" />
+        <activity android:name=".listItems" />
+        <activity android:name=".Examples_and_testing" />
+        <activity android:name=".Chats_Test" />
+        <activity android:name=".Lists_Test" />
+        <activity android:name=".Test_Intents" />
+        <activity android:name=".PasswordResetActivity" />
+        <activity android:name=".TesterActivity" />
         <activity android:name=".UserPage" />
         <activity android:name=".SignupPage" />
         <activity android:name=".LoginPage" />

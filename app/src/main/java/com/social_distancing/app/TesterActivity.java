@@ -38,7 +38,6 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -49,9 +48,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import com.social_distancing.app.HelperClass.LOG;
-import com.social_distancing.app.HelperClass.COLLECTION;
-import com.social_distancing.app.HelperClass.USER;
-import com.social_distancing.app.HelperClass.LIST;
+import com.social_distancing.app.HelperClass.Collections;
+import com.social_distancing.app.HelperClass.Collections.Users;
+import com.social_distancing.app.HelperClass.Collections.Lists;
 
 public class TesterActivity extends AppCompatActivity {
 
@@ -146,7 +145,7 @@ public class TesterActivity extends AppCompatActivity {
 								
 								Log.d(LOG.INFORMATION, "Now getting user document.");
 								
-								return db.collection(COLLECTION.USERS).document(currentUserID).get();
+								return db.collection(Collections.USERS).document(currentUserID).get();
 							} else {
 								return null;
 							}
@@ -170,7 +169,7 @@ public class TesterActivity extends AppCompatActivity {
 										firstNameLabel.setText("Welcome User Name");
 										
 										ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item);
-										adapter.addAll((ArrayList<String>)userData.get(USER.LISTS));
+										adapter.addAll((ArrayList<String>)userData.get(Collections.USERS));
 										listSpinner.setAdapter(adapter);
 										
 										listLayout.setVisibility(View.VISIBLE);
@@ -185,7 +184,7 @@ public class TesterActivity extends AppCompatActivity {
 											@Override
 											public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 												Log.d(LOG.INFORMATION, "User document snapshot listener has been called. ID:" + documentSnapshot.getId() + ".");
-												ArrayList<String> items = (ArrayList<String>)documentSnapshot.get(USER.LISTS);
+												ArrayList<String> items = (ArrayList<String>)documentSnapshot.get(Users.LISTS);
 												ArrayAdapter<String> adapter = ((ArrayAdapter<String>)listSpinner.getAdapter());
 												if (adapter != null){
 													adapter.clear();
@@ -237,13 +236,13 @@ public class TesterActivity extends AppCompatActivity {
 							Log.d(LOG.SUCCESS, "Successfully created user.");
 							
 							Map<String, Object> mapData = new HashMap<>();
-							mapData.put(USER.FIRSTNAME, "FirstName");
-							mapData.put(USER.LASTNAME, "LastName");
-							mapData.put(USER.EMAIL, "SomeEmail@email.com");
-							mapData.put(USER.FRIENDS, new ArrayList<String>());
-							mapData.put(USER.LISTS, new ArrayList<String>());
+							mapData.put(Users.FIRSTNAME, "FirstName");
+							mapData.put(Users.LASTNAME, "LastName");
+							mapData.put(Users.EMAIL, "SomeEmail@email.com");
+							mapData.put(Users.FRIENDS, new ArrayList<String>());
+							mapData.put(Users.LISTS, new ArrayList<String>());
 							
-							DocumentReference newUserDocument = db.collection(COLLECTION.USERS).document();
+							DocumentReference newUserDocument = db.collection(Collections.USERS).document();
 							
 							Log.d(LOG.INFORMATION, "Adding new user to Users collection.");
 							
@@ -313,20 +312,20 @@ public class TesterActivity extends AppCompatActivity {
 				}
 				
 				Log.d(LOG.INFORMATION, "Creating new List.");
-				final DocumentReference newListDocument = db.collection(COLLECTION.LISTS).document();
+				final DocumentReference newListDocument = db.collection(Collections.LISTS).document();
 				Map<String, Object> listData = new HashMap<>();
-				listData.put(LIST.USERS, new ArrayList<String>(Arrays.asList(auth.getCurrentUser().getUid())));
-				listData.put(LIST.ITEMS, new ArrayList<String>());
+				listData.put(Lists.USERS, new ArrayList<String>(Arrays.asList(auth.getCurrentUser().getUid())));
+				listData.put(Lists.ITEMS, new ArrayList<String>());
 				
 				newListDocument.set(listData).continueWithTask(new Continuation<Void, Task<Void>>() {
 					@Override
 					public Task<Void> then(@NonNull Task<Void> task) throws Exception {
 						if (task.isSuccessful()){
 							Log.d(LOG.SUCCESS, "Successfully created list.");
-							DocumentReference userDocument = db.collection(COLLECTION.USERS).document(auth.getCurrentUser().getUid());
+							DocumentReference userDocument = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 							Log.d(LOG.INFORMATION, "Adding list to user document.");
 							//return userDocument.update(USER.LISTS, new ArrayList<String>(Arrays.asList(newListDocument.getId())));
-							return userDocument.update(USER.LISTS, FieldValue.arrayUnion(newListDocument.getId()));
+							return userDocument.update(Users.LISTS, FieldValue.arrayUnion(newListDocument.getId()));
 						} else {
 							Log.d(LOG.ERROR, "Failed to create list. " + task.getException().getMessage());
 							return null;
@@ -339,7 +338,7 @@ public class TesterActivity extends AppCompatActivity {
 							if (task.isSuccessful()){
 								Log.d(LOG.SUCCESS, "Successfully added list to user document.");
 								ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item);
-								ArrayList<String> lists = (ArrayList<String>)userData.get(USER.LISTS);
+								ArrayList<String> lists = (ArrayList<String>)userData.get(Users.LISTS);
 								lists.add(newListDocument.getId());
 								adapter.addAll(lists);
 								listSpinner.setAdapter(adapter);
@@ -368,13 +367,13 @@ public class TesterActivity extends AppCompatActivity {
 					return;
 				}
 				
-				DocumentReference userDocumentReference = db.collection(COLLECTION.USERS).document(auth.getCurrentUser().getUid());
+				DocumentReference userDocumentReference = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 				userDocumentReference.get().continueWithTask(new Continuation<DocumentSnapshot, Task<Void>>() {
 					@Override
 					public Task<Void> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
 						if (task.isSuccessful()){
 							DocumentSnapshot userDocument = (DocumentSnapshot)task.getResult();
-							ArrayList<String> userLists = (ArrayList<String>)userDocument.get(USER.LISTS);
+							ArrayList<String> userLists = (ArrayList<String>)userDocument.get(Users.LISTS);
 							if (userLists.size() == 0){
 								Log.d(LOG.ERROR, "User has no lists.");
 								return null;
@@ -382,9 +381,9 @@ public class TesterActivity extends AppCompatActivity {
 								String listID = userLists.get(0);
 								listID = listSpinner.getSelectedItem().toString();
 								
-								DocumentReference listReference = db.collection(COLLECTION.LISTS).document(listID);
+								DocumentReference listReference = db.collection(Collections.LISTS).document(listID);
 								Log.d(LOG.INFORMATION, "Attempting to add item to list.");
-								return listReference.update(LIST.ITEMS, FieldValue.arrayUnion(listItemValue.getText().toString()));
+								return listReference.update(Collections.Lists.ITEMS, FieldValue.arrayUnion(listItemValue.getText().toString()));
 							}
 						} else {
 							Log.d(LOG.ERROR, "Failed to get user document. Perhaps it was deleted? " + task.getException().getMessage());
@@ -439,15 +438,15 @@ public class TesterActivity extends AppCompatActivity {
 					return;
 				
 				final String listID = listSpinner.getSelectedItem().toString();
-				DocumentReference listDocument = db.collection(COLLECTION.LISTS).document(listID);
+				DocumentReference listDocument = db.collection(Collections.LISTS).document(listID);
 				
 				listDocument.delete().continueWithTask(new Continuation<Void, Task<Void>>() {
 					@Override
 					public Task<Void> then(@NonNull Task<Void> task) throws Exception {
 						if (task.isSuccessful()){
-							DocumentReference userDocument = db.collection(COLLECTION.USERS).document(auth.getCurrentUser().getUid());
-							Log.d(LOG.INFORMATION, "Attempting to delete list item from users list array.");
-							return userDocument.update(USER.LISTS, FieldValue.arrayRemove(listID));
+							DocumentReference userDocument = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
+							Log.d(LOG.INFORMATION, "Attempting to delete list item from Users list array.");
+							return userDocument.update(Users.LISTS, FieldValue.arrayRemove(listID));
 						} else {
 							Log.d(LOG.ERROR, "Failed at deleting list document.");
 							return null;
@@ -459,7 +458,7 @@ public class TesterActivity extends AppCompatActivity {
 						if (task != null){
 							if (task.isSuccessful()){
 								ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item);
-								ArrayList<String> lists = (ArrayList<String>)userData.get(USER.LISTS);
+								ArrayList<String> lists = (ArrayList<String>)userData.get(Users.LISTS);
 								lists.remove(listID);
 								adapter.addAll(lists);
 								listSpinner.setAdapter(adapter);
@@ -477,7 +476,7 @@ public class TesterActivity extends AppCompatActivity {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 				String listID = listSpinner.getItemAtPosition(position).toString();
-				DocumentReference listDocument = db.collection(COLLECTION.LISTS).document(listID);
+				DocumentReference listDocument = db.collection(Collections.LISTS).document(listID);
 				
 				String key = "list";
 				
@@ -489,7 +488,7 @@ public class TesterActivity extends AppCompatActivity {
 					@Override
 					public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 						Log.d(LOG.INFORMATION, "List document snapshot listener has been called. ID:" + documentSnapshot.getId() + ".");
-						ArrayList<String> items = (ArrayList<String>)documentSnapshot.get(LIST.ITEMS);
+						ArrayList<String> items = (ArrayList<String>)documentSnapshot.get(Lists.ITEMS);
 						
 						listLayoutForItems.removeAllViews();
 						if (items == null){
@@ -527,7 +526,7 @@ public class TesterActivity extends AppCompatActivity {
 							if (true)
 								return;
 							DocumentSnapshot documentSnapshot = (DocumentSnapshot)task.getResult();
-							ArrayList<String> listItems = (ArrayList<String>)documentSnapshot.get(LIST.ITEMS);
+							ArrayList<String> listItems = (ArrayList<String>)documentSnapshot.get(Lists.ITEMS);
 							ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item);
 							adapter.addAll(listItems);
 							listItemSpinner.setAdapter(adapter);
