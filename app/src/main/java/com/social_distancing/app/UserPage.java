@@ -8,10 +8,12 @@ import android.os.Bundle;
 
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,10 +53,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 
 import com.google.android.gms.tasks.Continuation;
@@ -60,57 +67,62 @@ import com.google.android.gms.tasks.Continuation;
 public class UserPage extends AppCompatActivity {
 	
 	FirebaseAuth mAuth;
+	FirebaseUser mUser;
+	User userData;
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	Context context = this;
 
 	RequestQueue mQueue;
 
 	//////////////
-	
+
+	ConstraintLayout rootView;
+
 	EditText userIDEditText;
-	
+	EditText userIDAddFriendEditText;
+	EditText messageDataEditText;
+
 	TextView fullnameTextView;
 	TextView textView3;
 	Button button3;
 	Button friendsButton;
 	Button chatsButton;
 	Button listsButton;
+	Button sendChatmessageButton;
+	Button addFriendButton;
 	
 	LinearLayout linearLayout1;
 	LinearLayout linearLayout2;
 	LinearLayout linearLayout3;
 	LinearLayout parentLinearLayout;
-	
+	LinearLayout friendsListLayout;
+	LinearLayout insertMessageLayout;
+	ScrollView friendsListScrollLayout;
+
+	TabLayout mainTabLayout;
+
 	RecyclerView friendsRecyclerView;
 	RecyclerView chatsRecyclerView;
 	RecyclerView listsRecyclerView;
 	
-	EditText userIDAddFriendEditText;
-	
-	LinearLayout friendsListLinearLayout;
-	
-	TabLayout mainTabLayout;
-	
-	LinearLayout insertMessageLayout;
-	
-	Button sendChatmessageButton;
-	
-	EditText messageDataEditText;
-	
-	String myName;
+	//String myName;
 	//////////////
-	
-	private Object getDocument(String collection, String document){
-		DocumentReference docRef = db.collection(collection).document(document);
-		
-		Task<DocumentSnapshot> task = docRef.get();
-		while(!task.isComplete());
-		if (task.isSuccessful()) {
-			return task.getResult();
-		}
-		return null;
+	private void getUserData(){
+		DocumentReference docRef = db.collection("Users").document(mUser.getUid());
+		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+			@Override
+			public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+				if (task.getResult().exists()) {
+					userData = task.getResult().toObject(User.class);
+					userData.initSnapshotListener();
+					userData.initFriendsData();
+					setContent();
+				}
+			}
+		});
 	}
-	
+
+	/*
 	private void getChats(String uid){
 		CollectionReference collectionReference = db.collection("Users").document(uid).collection("Chats");
 		collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -130,7 +142,9 @@ public class UserPage extends AppCompatActivity {
 		});
 		//addChats(null);
 	}
-	
+	 */
+
+	/*
 	private void addChats(List<DocumentSnapshot> chats){
 		for (DocumentSnapshot chat : chats){
 			if (!chat.exists())
@@ -235,19 +249,16 @@ public class UserPage extends AppCompatActivity {
 							});
 							
 							linearLayout2.addView(friendMessageUserLayout);
-							
-							
-							
-							//linearLayout2.setBackgroundColor(Color.RED);
 						}
 					}
 				}
 			});
 		}
 	}
-	
 
+	 */
 
+	/*
 	private void getChatMessages(final String uid, final String cid){
 		DocumentReference docRef = db.collection("Chat").document(cid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -314,7 +325,7 @@ public class UserPage extends AppCompatActivity {
 											textView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 											contentTextView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 											//linlayout.setBackgroundColor(Color.YELLOW);
-											textView.setText(myName);
+											//textView.setText(myName);
 										}
 										
 										linlayout.addView(linearLayout);
@@ -341,7 +352,7 @@ public class UserPage extends AppCompatActivity {
 												data.put("Messages", FieldValue.arrayUnion("Test"));
 												String id = db.collection("Chat").document(cid).getId();
 												db.collection("Chat").document(cid).update(data);
-												*/
+												/*
 							
 							String id = db.collection("Message").document().getId();
 							
@@ -402,7 +413,7 @@ public class UserPage extends AppCompatActivity {
 										textView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 										contentTextView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 										//linlayout.setBackgroundColor(Color.YELLOW);
-										textView.setText(myName);
+										//textView.setText(myName);
 									}
 									
 									linlayout.addView(linearLayout);
@@ -416,12 +427,14 @@ public class UserPage extends AppCompatActivity {
 					
 					parentLinearLayout.removeAllViews();
 					parentLinearLayout.addView(chatMessagesLayout);
-					insertMessageLayout.setVisibility(View.VISIBLE);
+					//insertMessageLayout.setVisibility(View.VISIBLE);
 				}
 			}
 		});
 	}
-	
+	 */
+
+	/*
 	private void getFriends(String uid){
 		DocumentReference docRef = db.collection("Users").document(uid);
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -436,7 +449,9 @@ public class UserPage extends AppCompatActivity {
 			}
 		});
 	}
-	
+	 */
+
+	/*
 	private void addFriends(ArrayList<String> friends_uid){
 		for (String friend_uid : friends_uid) {
 			DocumentReference documentReference = db.collection("Users").document(friend_uid);
@@ -488,7 +503,9 @@ public class UserPage extends AppCompatActivity {
 			});
 		}
 	}
+	 */
 
+	/*
 	private void getProfileInformation(final String uid){
 		DocumentReference documentReference = db.collection("Users").document(uid);
 		documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -499,8 +516,8 @@ public class UserPage extends AppCompatActivity {
 					if (documentSnapshot.exists()){
 						String firstName = (String)documentSnapshot.get("FirstName");
 						String lastName = (String)documentSnapshot.get("LastName");
-						myName = firstName;
-						fullnameTextView.setText(firstName + " " + lastName);
+						//myName = firstName;
+						//fullnameTextView.setText(firstName + " " + lastName);
 						getFriends(uid);
 						getChats(uid);
 					}
@@ -508,7 +525,9 @@ public class UserPage extends AppCompatActivity {
 			}
 		});
 	}
-	
+	 */
+
+	/*
 	private void addFriend(final String frienduid){
 		final DocumentReference documentReference = db.collection("Users").document(mAuth.getCurrentUser().getUid().toString());
 		Task<DocumentSnapshot> documentSnapshotTask = documentReference.get();
@@ -524,6 +543,59 @@ public class UserPage extends AppCompatActivity {
 			}
 		});
 
+	}
+     */
+
+	/*
+	private void getFriendData() {
+		final ArrayMap<String, Friend> friends = new ArrayMap<>();
+		for (final String friendUid : userData.getFriends()) {
+			DocumentReference docRef = db.collection("Users").document(friendUid);
+			docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+				@Override
+				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+					if (task.getResult().exists()) {
+						friends.put(friendUid, task.getResult().toObject(Friend.class));
+					}
+				}
+			});
+		}
+	}
+
+	 */
+
+	private void friendLayout() {
+		friendsListLayout.removeAllViews();
+		for (String friendUid: userData.getFriendsData().keySet()) {
+			LinearLayout friendUserLayout = new LinearLayout(context);
+			friendUserLayout.setBackgroundColor(Color.TRANSPARENT);
+			friendUserLayout.setOrientation(LinearLayout.HORIZONTAL);
+			friendUserLayout.setWeightSum(1);
+
+			TextView friendFullName = new TextView(context);
+			friendFullName.setText(userData.getFriendsData().get(friendUid).getFullName());
+			friendFullName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+			friendFullName.setTextSize(18);
+			friendFullName.setTextColor(Color.BLACK);
+
+			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+			layoutParams.weight = (float) 0.9;
+			friendFullName.setLayoutParams(layoutParams);
+
+			friendUserLayout.addView(friendFullName);
+
+			friendUserLayout.setPadding(20,0,20,30);
+
+			friendsListLayout.addView(friendUserLayout);
+		}
+	}
+
+	private void setContent() {
+		fullnameTextView.setText(userData.getFullName());
+		friendLayout();
+		if (rootView.getVisibility() != View.VISIBLE) {
+			rootView.setVisibility(View.VISIBLE);
+		}
 	}
 
 	// An example of calling the RestAPI on the server
@@ -567,21 +639,13 @@ public class UserPage extends AppCompatActivity {
 		});
 	}
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	private void initViews() {
+		rootView = (ConstraintLayout) findViewById(R.id.user_page_layout);
+		rootView.setVisibility(View.GONE);
 
-		mAuth = FirebaseAuth.getInstance();
-		final FirebaseUser currentUser = mAuth.getCurrentUser();
-
-		mQueue = VolleySingleton.getInstance(this).getRequestQueue();
-
-		setContentView(R.layout.activity_user_page);
-		
-		userIDEditText = (EditText) findViewById(R.id.userIDEditText);
-		
 		fullnameTextView = (TextView)findViewById(R.id.fullnameTextView);
 		textView3 = (TextView)findViewById(R.id.textView3);
+
 		button3 = (Button)findViewById(R.id.button3);
 		friendsButton = (Button)findViewById(R.id.friendsButton);
 		chatsButton = (Button)findViewById(R.id.chatsButton);
@@ -592,44 +656,35 @@ public class UserPage extends AppCompatActivity {
 		linearLayout3 = (LinearLayout)findViewById(R.id.LinearLayout3);
 		parentLinearLayout = (LinearLayout)findViewById(R.id.parentLinearLayout);
 		
-		friendsRecyclerView = (RecyclerView)findViewById(R.id.friendsRecyclerView);
+		//friendsRecyclerView = (RecyclerView)findViewById(R.id.friendsRecyclerView);
 		chatsRecyclerView = (RecyclerView)findViewById(R.id.chatsRecyclerView);
 		listsRecyclerView = (RecyclerView)findViewById(R.id.listsRecyclerView);
 		
 		userIDAddFriendEditText = (EditText)findViewById(R.id.userIDAddFriendEditText);
-		
-		friendsListLinearLayout = (LinearLayout)findViewById(R.id.friendsListLinearLayout);
-		
+		userIDEditText = (EditText) findViewById(R.id.userIDEditText);
+		messageDataEditText = (EditText)findViewById(R.id.messageDataEditText);
+
 		mainTabLayout = (TabLayout)findViewById(R.id.mainTabLayout);
-		
-		userIDAddFriendEditText.setHint(currentUser.getUid().toString());
-		userIDAddFriendEditText.setHint(currentUser.getUid().toString());
 		
 		parentLinearLayout.removeAllViews();
 		parentLinearLayout.addView(linearLayout1);
-		
+		friendsListLayout = (LinearLayout)findViewById(R.id.friendsListLayout);
 		insertMessageLayout = (LinearLayout)findViewById(R.id.InsertMessageLayout);
-		
+
+		friendsListScrollLayout = (ScrollView)findViewById(R.id.friendsListScrollLayout);
 		
 		sendChatmessageButton = (Button)findViewById(R.id.sendChatMessageButton);
-		
-		messageDataEditText = (EditText)findViewById(R.id.messageDataEditText);
-		
+		addFriendButton = (Button)findViewById(R.id.addFriendButton);
+
+		return;
+	}
+
+	private void initTabbedMenuListener() {
 		mainTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
-				insertMessageLayout.setVisibility(View.GONE);
 				parentLinearLayout.removeAllViews();
-
-				LayoutInflater layoutInflater = LayoutInflater.from(context);
-				View linearLayout = (View)layoutInflater.inflate(R.layout.testlayout, null, false);
-				Button button = (Button)linearLayout.findViewById(R.id.button5);
-				button.setText("NNIIIIGGGGG");
-				//parentLinearLayout.addView(linearLayout);
-
-				if (true){
-					//return;
-				}
+				setContent();
 
 				switch (tab.getPosition()) {
 					case 0:
@@ -654,46 +709,31 @@ public class UserPage extends AppCompatActivity {
 				onTabSelected(tab);
 			}
 		});
-		
-		linearLayout2.removeAllViews();
+	}
 
-
-		if (mAuth.getCurrentUser() == null){
-			Log.d("", "LOGGING IN");
-			mAuth.signInWithEmailAndPassword("username@email.com", "username").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-				@Override
-				public void onComplete(@NonNull Task<AuthResult> task) {
-					if (task.isSuccessful()) {
-						FirebaseUser user = mAuth.getCurrentUser();
-						Toast.makeText(context, "Successfully logged in.",
-								Toast.LENGTH_SHORT).show();
-						
-						String uid = currentUser.getUid().toString();
-						getProfileInformation(uid);
-					} else {
-						Toast.makeText(context, "Login failed." + task.getException().toString(),
-								Toast.LENGTH_SHORT).show();
-					}
-				}
-			});
-		} else {
-			Log.d("", "Already logged in");
-			String uid = mAuth.getUid().toString();
-			getProfileInformation(uid);
-		}
-		
-		userIDEditText.setText(mAuth.getUid().toString());
-		
-
-		final Button addFriendButton = (Button)findViewById(R.id.addFriendButton);
-		final TextView userIDAddFriendEditText = (TextView)findViewById(R.id.userIDAddFriendEditText);
+	private void initAddFriendListener() {
 		addFriendButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				addFriend(userIDAddFriendEditText.getText().toString());
+				//addFriend(userIDAddFriendEditText.getText().toString());
 			}
 		});
+	}
 
-		testRestAPI();
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_user_page);
+		initViews();
+
+		initTabbedMenuListener();
+		initAddFriendListener();
+
+		mAuth = FirebaseAuth.getInstance();
+		mUser = mAuth.getCurrentUser();
+		mQueue = VolleySingleton.getInstance(this).getRequestQueue();
+
+		getUserData();
+		//testRestAPI();
 	}
 }
