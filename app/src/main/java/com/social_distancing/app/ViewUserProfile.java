@@ -29,8 +29,11 @@ import com.social_distancing.app.HelperClass.Collections;
 import com.social_distancing.app.HelperClass.LOG;
 import com.social_distancing.app.HelperClass.User;
 
+import org.w3c.dom.Text;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -68,15 +71,20 @@ public class ViewUserProfile extends AppCompatActivity {
 			public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 				//Log.d(LOG.INFORMATION, "AAAAAAAAAAAAAAAAAAAAA");
 				ArrayList<String> newFriends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
-				LinearLayout friendsLayout = (LinearLayout)findViewById(R.id.friendsLayout);
-				friendsLayout.removeAllViews();
+				final LinearLayout friendsLayout = (LinearLayout)findViewById(R.id.friendsLayout);
 				
 				ArrayList<Task<?>> tasks = new ArrayList<>();
 				
+				final ArrayList<TextView> newTexts = new ArrayList<>();
+				
 				for (final String friend : newFriends){
+					if (User.friends.contains(friend) == false) {
+						//continue;
+					}
+					
 					final TextView textView = new TextView(context);
 					textView.setText(friend);
-					friendsLayout.addView(textView);
+					newTexts.add(textView);
 					
 					Task<?> task1 = User.getProfileInfo(friend).addOnCompleteListener(new OnCompleteListener<Map<String, Object>>() {
 						@Override
@@ -85,14 +93,17 @@ public class ViewUserProfile extends AppCompatActivity {
 								Map<String, Object> userInfo = (Map<String, Object>)task.getResult();
 								
 								if (User.friends.contains(friend)) {
-									//textView.setTextColor(Color.GREEN);
+									textView.setTextColor(Color.GREEN);
 								}
 								
 								textView.setText(userInfo.get(Collections.Users.FIRSTNAME).toString() + " " + userInfo.get(Collections.Users.LASTNAME).toString());
 								textView.setPadding(0, 0, 0, 10);
+								textView.setTextSize(16);
 								
-								if (friend == HelperClass.auth.getCurrentUser().getUid())
+								Log.d(LOG.INFORMATION, "ID: " + HelperClass.auth.getCurrentUser().getUid() + ", Friend: " + friend);
+								if (friend.equals(HelperClass.auth.getCurrentUser().getUid())) {
 									return;
+								}
 								
 								textView.setOnClickListener(new View.OnClickListener() {
 									@Override
@@ -120,7 +131,13 @@ public class ViewUserProfile extends AppCompatActivity {
 						@Override
 						public void onComplete(@NonNull Task<List<Task<?>>> task) {
 							
+							friendsLayout.removeAllViews();
+							for (TextView textView1 : newTexts){
+								friendsLayout.addView(textView1);
+							}
+							
 							((LinearLayout)findViewById(R.id.rootLayout)).setVisibility(View.VISIBLE);
+							
 						}
 					});
 				}
@@ -135,6 +152,7 @@ public class ViewUserProfile extends AppCompatActivity {
 		final TextView joinDateInfo = (TextView)findViewById(R.id.joinDateInfo);
 		final TextView lastSeenInfo = (TextView)findViewById(R.id.lastSeenInfo);
 		final Button friendActionButton = (Button)findViewById(R.id.friendActionButton);
+		final Button friendActionButton2 = (Button)findViewById(R.id.friendActionButton2);
 		
 		final LinearLayout friendsLayout = (LinearLayout)findViewById(R.id.friendsLayout);
 		
@@ -184,8 +202,16 @@ public class ViewUserProfile extends AppCompatActivity {
 		 */
 		ArrayList<String> friends = User.friends;
 		
+		final LinearLayout friendAction2Layout = (LinearLayout)findViewById(R.id.friendAction2Layout);
+		
+		if (userID.equals(HelperClass.auth.getCurrentUser().getUid().toString())){
+			friendActionButton.setVisibility(View.GONE);
+		}
+		
+		friendActionButton2.setText("Message");
 		if (User.friends.contains(finalUserID)) {
 			friendActionButton.setText("Remove friend");
+			friendAction2Layout.setVisibility(View.VISIBLE);
 		} else {
 			friendActionButton.setText("Add friend");
 		}
@@ -207,6 +233,7 @@ public class ViewUserProfile extends AppCompatActivity {
 							v.setEnabled(true);
 						}
 					});
+					friendAction2Layout.setVisibility(View.GONE);
 				} else {
 					friendActionButton.setText("Add friend");
 					Log.d(LOG.INFORMATION, "Adding friend.");
@@ -221,7 +248,20 @@ public class ViewUserProfile extends AppCompatActivity {
 							v.setEnabled(true);
 						}
 					});
+					friendAction2Layout.setVisibility(View.VISIBLE);
 				}
+			}
+		});
+		
+		friendActionButton2.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final Intent intent = new Intent(context, chat.class);
+				intent.putExtra("userID", finalUserID);
+				intent.putExtra("name", userFullName.getText().toString());
+				//intent.putExtra("name", userFullName.getText().toString());
+				startActivity(intent);
+				String userID = getIntent().getStringExtra("userID");
 			}
 		});
 		

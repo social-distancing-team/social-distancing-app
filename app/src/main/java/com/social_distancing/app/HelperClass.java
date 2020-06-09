@@ -47,6 +47,8 @@ public class HelperClass {
 		public static String LISTS = "Lists";
 		public static String USERDATA = "UserData";
 		public static String USERLISTS = "UserLists";
+		public static String CHATS = "Chats";
+		public static String MESSAGES = "Messages";
 		
 		public static class Users{
 			public static String FIRSTNAME = "FirstName";
@@ -85,7 +87,26 @@ public class HelperClass {
 			public static String LISTS = "Lists";
 		}
 		
+		
+		public static class Chat{
+			public static String NAME = "Name";
+			public static String USERS = "Users";
+			public static String MESSAGES = "Messages";
+			public static String LASTMESSAGE = "LastMessage";
+			public static String LASTMESSAGETIMESTAMP = "LastMessageTimestamp";
+		}
+		
+		
+		public static class Message{
+			public static String CHATID = "ChatID";
+			public static String CONTENT = "Content";
+			public static String USERID = "sendingUserID";
+			public static String TIMESTAMP = "timestamp";
+		}
+		
 	}
+	
+	
 	
 	public static class User {
 		public static final ArrayList<Runnable> runnables = new ArrayList<>();
@@ -211,7 +232,9 @@ public class HelperClass {
 								Log.d(LOG.INFORMATION, "Friends: " + friends.toString());
 								
 								for (String key : userInfoRunnables.keySet()){
-									userInfoRunnables.get(key).run();
+									Runnable runnable = userInfoRunnables.get(key);
+									if (runnable != null)
+										runnable.run();
 								}
 								
 							}

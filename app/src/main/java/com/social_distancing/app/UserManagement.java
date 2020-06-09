@@ -141,5 +141,11 @@ public class UserManagement extends AppCompatActivity {
 		});
 	}
 	
-	
+	@Override
+	public void finish(){
+		Log.d(HelperClass.LOG.INFORMATION, "Calling finish.");
+		super.finish();
+		HelperClass.User.userInfoRunnables.put("UserManagement", null);
+		
+	}
 }

@@ -623,8 +623,8 @@ public class UserPage extends AppCompatActivity {
 
 				LayoutInflater layoutInflater = LayoutInflater.from(context);
 				View linearLayout = (View)layoutInflater.inflate(R.layout.testlayout, null, false);
-				Button button = (Button)linearLayout.findViewById(R.id.button5);
-				button.setText("NNIIIIGGGGG");
+				//Button button = (Button)linearLayout.findViewById(R.id.button5);
+				//button.setText("NNIIIIGGGGG");
 				//parentLinearLayout.addView(linearLayout);
 
 				if (true){

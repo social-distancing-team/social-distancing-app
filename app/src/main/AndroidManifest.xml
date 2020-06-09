@@ -5,27 +5,33 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".chat"></activity>
         <activity android:name=".Test_Intents" />
-        <activity android:name=".LoginPage">
+        <activity android:name=".PasswordResetActivity" />
+        <activity android:name=".HomeTest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TesterActivity">
-
-        </activity>
+        <activity android:name=".TesterActivity" />
+        <activity android:name=".UserManagement" />
+        <activity android:name=".ViewUserProfile" />
+        <activity android:name=".bottomnavigationdrawer" />
+        <activity android:name=".listItems" />
+        <activity android:name=".Examples_and_testing" />
+        <activity android:name=".Chats_Test" />
+        <activity android:name=".Lists_Test" />
         <activity android:name=".UserPage" />
         <activity android:name=".SignupPage" />
-        <activity android:name=".PasswordResetActivity" />
+        <activity android:name=".LoginPage" />
 
         <uses-library
             android:name="org.apache.http.legacy"
