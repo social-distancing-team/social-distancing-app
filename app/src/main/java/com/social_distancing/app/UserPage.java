@@ -2,9 +2,11 @@ package com.social_distancing.app;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 
 
 import androidx.annotation.NonNull;
@@ -67,8 +69,7 @@ import com.google.android.gms.tasks.Continuation;
 public class UserPage extends AppCompatActivity {
 	
 	FirebaseAuth mAuth;
-	FirebaseUser mUser;
-	User userData;
+	User mUser;
 	FirebaseFirestore db = FirebaseFirestore.getInstance();
 	Context context = this;
 
@@ -101,12 +102,13 @@ public class UserPage extends AppCompatActivity {
 
 	TabLayout mainTabLayout;
 
-	RecyclerView friendsRecyclerView;
+	//RecyclerView friendsRecyclerView;
 	RecyclerView chatsRecyclerView;
 	RecyclerView listsRecyclerView;
 	
 	//String myName;
 	//////////////
+	/*
 	private void getUserData(){
 		DocumentReference docRef = db.collection("Users").document(mUser.getUid());
 		docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -121,6 +123,8 @@ public class UserPage extends AppCompatActivity {
 			}
 		});
 	}
+
+	 */
 
 	/*
 	private void getChats(String uid){
@@ -566,14 +570,14 @@ public class UserPage extends AppCompatActivity {
 
 	private void friendLayout() {
 		friendsListLayout.removeAllViews();
-		for (String friendUid: userData.getFriendsData().keySet()) {
+		for (String friendUid: mUser.getFriends()) {
 			LinearLayout friendUserLayout = new LinearLayout(context);
 			friendUserLayout.setBackgroundColor(Color.TRANSPARENT);
 			friendUserLayout.setOrientation(LinearLayout.HORIZONTAL);
 			friendUserLayout.setWeightSum(1);
 
 			TextView friendFullName = new TextView(context);
-			friendFullName.setText(userData.getFriendsData().get(friendUid).getFullName());
+			friendFullName.setText(mUser.myFdata().get(friendUid).getFullName());
 			friendFullName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 			friendFullName.setTextSize(18);
 			friendFullName.setTextColor(Color.BLACK);
@@ -590,9 +594,8 @@ public class UserPage extends AppCompatActivity {
 		}
 	}
 
-	private void setContent() {
-		fullnameTextView.setText(userData.getFullName());
-		friendLayout();
+	private void showContent() {
+		fullnameTextView.setText(mUser.getFullName());
 		if (rootView.getVisibility() != View.VISIBLE) {
 			rootView.setVisibility(View.VISIBLE);
 		}
@@ -684,10 +687,10 @@ public class UserPage extends AppCompatActivity {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
 				parentLinearLayout.removeAllViews();
-				setContent();
 
 				switch (tab.getPosition()) {
 					case 0:
+						friendLayout();
 						parentLinearLayout.addView(linearLayout1);
 						break;
 					case 1:
@@ -720,20 +723,40 @@ public class UserPage extends AppCompatActivity {
 		});
 	}
 
+	private void initViewProfileListener() {
+		fullnameTextView.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				final Intent intent = new Intent(context, ViewUserProfile.class);
+				startActivity(intent);
+			}
+		});
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		UserSingleton.getInstance();
 		setContentView(R.layout.activity_user_page);
 		initViews();
 
-		initTabbedMenuListener();
-		initAddFriendListener();
-
 		mAuth = FirebaseAuth.getInstance();
-		mUser = mAuth.getCurrentUser();
 		mQueue = VolleySingleton.getInstance(this).getRequestQueue();
 
-		getUserData();
+		initTabbedMenuListener();
+		initAddFriendListener();
+		initViewProfileListener();
+
+		Handler handler = new Handler();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				//Delay for getting User Data from
+				mUser = UserSingleton.getInstance().getUser();
+				friendLayout();
+				showContent();
+			}
+		}, 1000);
 		//testRestAPI();
 	}
 }

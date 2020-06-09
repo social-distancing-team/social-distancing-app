@@ -26,6 +26,7 @@
         <activity android:name=".UserPage" />
         <activity android:name=".SignupPage" />
         <activity android:name=".PasswordResetActivity" />
+        <activity android:name=".ViewUserProfile" />
 
         <uses-library
             android:name="org.apache.http.legacy"

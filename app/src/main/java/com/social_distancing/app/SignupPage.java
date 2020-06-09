@@ -65,6 +65,7 @@ public class SignupPage extends AppCompatActivity {
 					if (task.isSuccessful()) {
 						// Sign in success, update UI with the signed-in user's information
 						FirebaseUser mUser = mAuth.getCurrentUser();
+						UserSingleton.getInstance();
 
 						Map<String, Object> data = new HashMap<>();
 						data.put("FirstName", firstnameEditText.getText().toString());

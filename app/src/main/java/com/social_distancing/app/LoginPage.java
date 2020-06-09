@@ -223,7 +223,7 @@ public class LoginPage extends AppCompatActivity {
 					@Override
 					public void onComplete(@NonNull Task<AuthResult> task) {
 						if (task.isSuccessful()) {
-							FirebaseUser user = mAuth.getCurrentUser();
+							UserSingleton.getInstance();
 
 							Toast.makeText(context, "Successfully logged in.", Toast.LENGTH_SHORT).show();
 
