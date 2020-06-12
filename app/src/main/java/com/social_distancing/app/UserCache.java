@@ -21,14 +21,6 @@ public class UserCache {
 
     }
 
-    public static synchronized UserCacheSingleton getInstance() {
-        if (mInstance == null){
-            Log.d("MMDEBUG", "UserSingleton: getInstance");
-            mInstance = new UserSingleton();
-        }
-        return mInstance;
-    }
-
     private void cacheNewBaseUser(final String UserID) {
         if (BaseUserArray.keySet().contains(UserID) || ExtendedUserArray.keySet().contains(UserID)) {
             return;

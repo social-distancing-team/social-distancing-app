@@ -27,7 +27,6 @@ public class UserSingleton {
                     mUser = task.getResult().toObject(User.class);
                     mUser.setUserID();
                     mUser.initSnapshotListener();
-                    mUser.updateFdata();
                 }
             }
         });
