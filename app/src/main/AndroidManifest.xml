@@ -11,16 +11,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".chat"></activity>
-        <activity android:name=".Test_Intents" />
-        <activity android:name=".PasswordResetActivity" />
-        <activity android:name=".HomeTest">
+        <activity android:name=".grouplist"></activity>
+        <activity android:name=".groupprofile" />
+        <activity android:name=".userprofile" />
+        <activity
+            android:name=".navigationdrawertest"
+            android:label="@string/title_activity_navigationdrawertest"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".mainpage" />
+        <activity android:name=".register" />
+        <activity android:name=".homePage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".chat" />
+        <activity android:name=".Test_Intents" />
+        <activity android:name=".PasswordResetActivity" />
+        <activity android:name=".HomeTest" />
         <activity android:name=".TesterActivity" />
         <activity android:name=".UserManagement" />
         <activity android:name=".ViewUserProfile" />

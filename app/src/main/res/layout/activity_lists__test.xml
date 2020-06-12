@@ -21,13 +21,6 @@
             android:id="@+id/listItemsLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <Button
-                android:id="@+id/niggerButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Button" />
-        </LinearLayout>
+            android:orientation="vertical"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

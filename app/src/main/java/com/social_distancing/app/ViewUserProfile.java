@@ -63,7 +63,7 @@ public class ViewUserProfile extends AppCompatActivity {
 			start();
 		}
 	}
-	
+	/*
 	void setup(String uID){
 		DocumentReference userInfoReference = (DocumentReference)HelperClass.db.collection(Collections.USERS).document(uID);
 		userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -146,6 +146,8 @@ public class ViewUserProfile extends AppCompatActivity {
 		});
 	}
 	
+	*/
+	
 	void start(){
 		
 		final TextView userFullName = (TextView)findViewById(R.id.userFullName);
@@ -200,6 +202,8 @@ public class ViewUserProfile extends AppCompatActivity {
 			}
 		});
 		 */
+		
+		/*
 		ArrayList<String> friends = User.friends;
 		
 		final LinearLayout friendAction2Layout = (LinearLayout)findViewById(R.id.friendAction2Layout);
@@ -387,7 +391,7 @@ public class ViewUserProfile extends AppCompatActivity {
 					
 					 */
 					
-					setup(finalUserID);
+					//setup(finalUserID);
 				}
 			}
 		});

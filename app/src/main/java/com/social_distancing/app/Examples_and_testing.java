@@ -77,8 +77,8 @@ public class Examples_and_testing extends AppCompatActivity {
 			public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 				if (task.isSuccessful() && task.getResult() != null){
 					DocumentSnapshot documentSnapshot = (DocumentSnapshot)task.getResult(); //userData document
-					ArrayList<String> lists = User.getLists();
-					
+					//ArrayList<String> lists = User.getLists();
+					ArrayList<String> lists = null;
 					setupListListeners();
 					
 					Log.d(LOG.INFORMATION, "Lists: " + lists.toString());

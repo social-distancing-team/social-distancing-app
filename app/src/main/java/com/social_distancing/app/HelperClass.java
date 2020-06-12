@@ -26,6 +26,7 @@ import org.w3c.dom.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HelperClass {
@@ -87,7 +88,6 @@ public class HelperClass {
 			public static String LISTS = "Lists";
 		}
 		
-		
 		public static class Chat{
 			public static String NAME = "Name";
 			public static String USERS = "Users";
@@ -103,18 +103,38 @@ public class HelperClass {
 			public static String USERID = "sendingUserID";
 			public static String TIMESTAMP = "timestamp";
 		}
-		
 	}
-	
-	
 	
 	public static class User {
 		public static final ArrayList<Runnable> runnables = new ArrayList<>();
-		public static final Map<String, Runnable> userInfoRunnables = new HashMap<>();
+		
+		public static final Map<String, String> userNames = new HashMap<>();
+		public static final Map<String, String> groupNames = new HashMap<>();
+		public static final Map<String, String> chatNames = new HashMap<>();
+		public static final Map<String, String> listNames = new HashMap<>();
+		
+		//public static final Map<String, Object> userData = new HashMap<>();
+		
+		public static final Map<String, String> userChats = new HashMap<>();
+		public static final Map<String, String> groupChats = new HashMap<>();
 		
 		
 		public static final Map<String, Object> userInfo = new HashMap<>();
-		public static final Map<String, Object> userData = new HashMap<>();
+		public static final Map<String, Map<String, Object>> friendInfo = new HashMap<>();
+		public static final Map<String, Map<String, Object>> groupInfo = new HashMap<>();
+		public static final Map<String, Map<String, Object>> chatInfo = new HashMap<>();
+		public static final Map<String, Map<String, Object>> listInfo = new HashMap<>();
+		
+		
+		public static final Map<String, Runnable> userInfoRunnables = new HashMap<>();
+		public static final Map<String, Runnable> friendInfoRunnables = new HashMap<>();
+		public static final Map<String, Runnable> groupInfoRunnables = new HashMap<>();
+		public static final Map<String, Runnable> chatInfoRunnables = new HashMap<>();
+		public static final Map<String, Runnable> listInfoRunnables = new HashMap<>();
+		
+		public static final ArrayList<String> groups = new ArrayList<>();
+		public static final ArrayList<String> friends = new ArrayList<>();
+		public static final Map<String, String> chats = new HashMap<>();
 		
 		public static boolean initiliased = false;
 		
@@ -126,6 +146,15 @@ public class HelperClass {
 			if (auth.getCurrentUser() != null) {
 				auth.signOut();
 				Log.d(LOG.INFORMATION, "Logged out.");
+				
+				userInfo.clear();
+				friendInfo.clear();
+				groupInfo.clear();
+				chatInfo.clear();
+				userInfoRunnables.clear();
+				friendInfoRunnables.clear();
+				groupInfoRunnables.clear();
+				
 				return true;
 			} else {
 				Log.d(LOG.ERROR, "Cannot logout when not logged in.");
@@ -133,34 +162,10 @@ public class HelperClass {
 			}
 		}
 		
-		//public static ArrayList<String>
-		
-		public static final ArrayList<String> friends = new ArrayList<>();
-		
-		public static void setup(){
-			friends.clear();
-			DocumentReference userInfoReference = (DocumentReference)db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
-			userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-				@Override
-				public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-					Log.d(LOG.INFORMATION, "User Information changed.");
-					Log.d(LOG.INFORMATION, "User Information changed2.");
-					friends.clear();
-					ArrayList<String> newFriends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
-					friends.addAll(newFriends);
-					userInfo.clear();
-					userInfo.putAll(documentSnapshot.getData());
-					Log.d(LOG.INFORMATION, "Friends: " + friends.toString());
-				}
-			});
-			
-			
-		}
-		
 		public static Task<DocumentSnapshot> login(String email, String password) {
 			if (auth.getCurrentUser() == null) {
 				
-				Task<DocumentSnapshot> loginTask = auth.signInWithEmailAndPassword("passwordispassword@email.com", "password").addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+				Task<DocumentSnapshot> loginTask = auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 					@Override
 					public void onComplete(@NonNull Task<AuthResult> task) {
 						if (task.isSuccessful()) {
@@ -184,7 +189,8 @@ public class HelperClass {
 							return Tasks.forResult(null);
 						}
 					}
-				}).continueWithTask(new Continuation<DocumentSnapshot, Task<DocumentSnapshot>>() {
+				});
+				/*.continueWithTask(new Continuation<DocumentSnapshot, Task<DocumentSnapshot>>() {
 					@Override
 					public Task<DocumentSnapshot> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
 						if (task.isSuccessful() && task.getResult() != null) {
@@ -194,7 +200,7 @@ public class HelperClass {
 							return Tasks.forResult(null);
 						}
 					}
-				});
+				});*/
 				
 				return loginTask;
 			} else {
@@ -210,85 +216,70 @@ public class HelperClass {
 				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 					if (task.isSuccessful()) {
 						DocumentSnapshot documentSnapshot = (DocumentSnapshot) task.getResult();
+						if (!documentSnapshot.exists()){
+							Log.d(LOG.ERROR, "user doucment not found");
+							return;
+						}
+						
 						Log.d(HelperClass.LOG.SUCCESS, "User found.");
 						Map<String, Object> mapData = documentSnapshot.getData();
+						
+						Log.d(LOG.INFORMATION, "user data : " + mapData.toString());
+						
 						for (String key : mapData.keySet()) {
 							userInfo.put(key, mapData.get(key));
 						}
 						
-						friends.clear();
-						friends.addAll((ArrayList<String>)mapData.get(Collections.Users.FRIENDS));
+						setupListeners();
+						/*
 						DocumentReference userInfoReference = (DocumentReference)db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 						userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 							@Override
-							public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+							public void onEvent(@Nullable final DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 								Log.d(LOG.INFORMATION, "User Information changed.");
-								friends.clear();
-								ArrayList<String> newFriends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
-								friends.addAll(newFriends);
-
 								userInfo.clear();
 								userInfo.putAll(documentSnapshot.getData());
+								
+								final ArrayList<String> friends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
 								Log.d(LOG.INFORMATION, "Friends: " + friends.toString());
 								
-								for (String key : userInfoRunnables.keySet()){
-									Runnable runnable = userInfoRunnables.get(key);
-									if (runnable != null)
-										runnable.run();
+								List<Task<?>> getFriendUserInfoTasks = new ArrayList<>();
+								for (String friend : friends){
+									if (!friendInfo.containsKey(friend)){
+										DocumentReference friendDocumentReference = (DocumentReference)db.collection(Collections.USERS).document(friend);
+										getFriendUserInfoTasks.add(friendDocumentReference.get());
+									}
 								}
+								
+								Tasks.whenAllComplete(getFriendUserInfoTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+									@Override
+									public void onComplete(@NonNull Task<List<Task<?>>> task) {
+										List<Task<?>> taskList = (List<Task<?>>)task.getResult();
+										for (Task friendInfoTask : taskList){
+											if (friendInfoTask.isSuccessful()){
+												DocumentSnapshot friendUserSnapshot = (DocumentSnapshot)friendInfoTask.getResult();
+												//userNames.put(documentSnapshot1.getId(), documentSnapshot1.get("FirstName") + " " + documentSnapshot1.get("LastName"));
+												friendInfo.put(friendUserSnapshot.getId(),  friendUserSnapshot.getData());
+											}
+										}
+										
+										for (String key : userInfoRunnables.keySet()){
+											Runnable runnable = userInfoRunnables.get(key);
+											if (runnable != null)
+												runnable.run();
+										}
+									}
+								});
 								
 							}
 						});
-						
+						*/
 						Log.d(HelperClass.LOG.INFORMATION, "userInfo: " + userInfo.toString());
 					} else {
 						Log.d(LOG.ERROR, "Failed to get user info.");
 					}
 				}
 			});
-		}
-		
-		private static Task<DocumentSnapshot> getUserData() {
-			Log.d(LOG.INFORMATION, "Getting user data.");
-			return db.collection(Collections.USERDATA).document(auth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-				@Override
-				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-					if (task.isSuccessful()) {
-						DocumentSnapshot documentSnapshot = (DocumentSnapshot) task.getResult();
-						Log.d(HelperClass.LOG.SUCCESS, "User Data found.");
-						Map<String, Object> mapData = documentSnapshot.getData();
-						for (String key : mapData.keySet()) {
-							userData.put(key, mapData.get(key));
-						}
-						Log.d(LOG.INFORMATION, "UserData: " + userData.toString());
-					} else {
-						Log.d(LOG.ERROR, "Failed to get user data.");
-					}
-				}
-			});
-		}
-		
-		public static Task<ArrayList<String> > getFriends() {
-			Task<ArrayList<String>> task = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid()).get().continueWithTask(new Continuation<DocumentSnapshot, Task<ArrayList<String>>>() {
-				@Override
-				public Task<ArrayList<String> > then(@NonNull Task<DocumentSnapshot> task) throws Exception {
-					if (task.isSuccessful() && task.getResult() != null){
-						DocumentSnapshot documentSnapshot = (DocumentSnapshot)task.getResult();
-						ArrayList<String> friends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
-						return Tasks.forResult(friends);
-					}
-					return Tasks.forResult(null);
-				}
-			});
-			return task;
-		}
-		
-		public static ArrayList<String> getLists(){
-			return (ArrayList<String>)userData.get(Collections.UserData.LISTS);
-		}
-		
-		public static ArrayList<String> getChats(){
-			return (ArrayList<String>)userData.get(Collections.UserData.CHATS);
 		}
 		
 		public static Task<Map<String, Object> > getProfileInfo(final String userID){
@@ -311,15 +302,14 @@ public class HelperClass {
 			return task;
 		}
 		
-		public static Task<Void> addFriend(final String userID){
+		public static Task<Void> addFriend_old(final String userID){
 			DocumentReference userInfoReference = (DocumentReference)db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 			final Map<String, Object> addFriendMap = new HashMap<>();
 			addFriendMap.put("Friends", FieldValue.arrayUnion(userID));
-			
 			return userInfoReference.update(addFriendMap);
 		}
 		
-		public static Task<Void> removeFriend(final String userID){
+		public static Task<Void> removeFriend_old(final String userID){
 			DocumentReference userInfoReference = (DocumentReference)db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 			final Map<String, Object> addFriendMap = new HashMap<>();
 			addFriendMap.put("Friends", FieldValue.arrayRemove(userID));
@@ -327,8 +317,364 @@ public class HelperClass {
 			return userInfoReference.update(addFriendMap);
 		}
 		
-		public static void addRunnable(Runnable runnable){
-			runnables.add(runnable);
+		public static void setupListeners(){
+			final String userID = auth.getCurrentUser().getUid().toString();
+			
+			DocumentReference userInfoReference = db.collection(Collections.USERS).document(userID);
+			DocumentReference userChatsReference = db.collection("UserChats").document(userID);
+			DocumentReference userGroupsReference = db.collection("UserGroups").document(userID);
+			DocumentReference userListsReference = db.collection("UserLists").document(userID);
+			
+			userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+				@Override
+				public void onEvent(@Nullable final DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+					Log.d(LOG.INFORMATION, "User Information changed.");
+					userInfo.clear();
+					userInfo.putAll(documentSnapshot.getData());
+					
+					List<Task<?>> getFriendUserInfoTasks = new ArrayList<>();
+					if (!documentSnapshot.get(Collections.Users.FRIENDS).toString().equals("")){
+						friends.clear();
+						friends.addAll((ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS));
+						
+						final ArrayList<String> friends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
+						Log.d(LOG.INFORMATION, "Friends: " + friends.toString());
+						
+						
+						
+						for (String friend : friends){
+							if (!friendInfo.containsKey(friend)){
+								DocumentReference friendDocumentReference = (DocumentReference)db.collection(Collections.USERS).document(friend);
+								
+								friendDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+									@Override
+									public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+										friendInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
+										for (String key : friendInfoRunnables.keySet()){
+											Runnable runnable = friendInfoRunnables.get(key);
+											if (runnable != null)
+												runnable.run();
+										}
+									}
+								});
+								
+								//getFriendUserInfoTasks.add(friendDocumentReference.get());
+							}
+						}
+					}
+					
+					for (String key : userInfoRunnables.keySet()){
+						Runnable runnable = userInfoRunnables.get(key);
+						if (runnable != null)
+							runnable.run();
+					}
+					
+					Tasks.whenAllComplete(getFriendUserInfoTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+						@Override
+						public void onComplete(@NonNull Task<List<Task<?>>> task) {
+							List<Task<?>> taskList = (List<Task<?>>)task.getResult();
+							for (Task friendInfoTask : taskList){
+								if (friendInfoTask.isSuccessful()){
+									DocumentSnapshot friendUserSnapshot = (DocumentSnapshot)friendInfoTask.getResult();
+									//userNames.put(documentSnapshot1.getId(), documentSnapshot1.get("FirstName") + " " + documentSnapshot1.get("LastName"));
+									friendInfo.put(friendUserSnapshot.getId(),  friendUserSnapshot.getData());
+								}
+							}
+							
+							for (String key : userInfoRunnables.keySet()){
+								Runnable runnable = userInfoRunnables.get(key);
+								if (runnable != null)
+									runnable.run();
+							}
+						}
+					});
+					
+				}
+			});
+			
+			userGroupsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+				@Override
+				public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+					groups.clear();
+					
+					Log.d(LOG.INFORMATION, "Group data: " + documentSnapshot.getData().toString());
+					
+					if (documentSnapshot.get("Groups").toString().equals(""))
+						return;
+					
+					groups.addAll((ArrayList)documentSnapshot.get("Groups"));
+					
+					ArrayList<String> groups = (ArrayList)documentSnapshot.get("Groups");
+					
+					Log.d(LOG.INFORMATION, "Group IDs: " + groups.toString());
+					
+					//
+					//groupInfo.clear();
+					
+					List<Task<?>> getGroupInfoTasks = new ArrayList<>();
+					for (String group : groups){
+						if (!groupInfo.containsKey(group) /*|| true*/){
+							DocumentReference groupDocumentReference = (DocumentReference)db.collection("Groups").document(group);
+							//getGroupInfoTasks.add(groupDocumentReference.get());
+							
+							groupDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+								@Override
+								public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+									groupInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
+									for (String key : groupInfoRunnables.keySet()){
+										Runnable runnable = groupInfoRunnables.get(key);
+										if (runnable != null)
+											runnable.run();
+									}
+								}
+							});
+							
+						}
+					}
+					
+					
+					
+					Tasks.whenAllComplete(getGroupInfoTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
+						@Override
+						public void onComplete(@NonNull Task<List<Task<?>>> task) {
+							List<Task<?>> taskList = (List<Task<?>>)task.getResult();
+							for (Task groupInfotask : taskList){
+								if (groupInfotask.isSuccessful()){
+									DocumentSnapshot groupSnapshot = (DocumentSnapshot)groupInfotask.getResult();
+									groupInfo.put(groupSnapshot.getId(),  groupSnapshot.getData());
+								}
+							}
+							
+							for (String key : groupInfoRunnables.keySet()){
+								Runnable runnable = groupInfoRunnables.get(key);
+								if (runnable != null)
+									runnable.run();
+							}
+						}
+					});
+				}
+			});
+			
+			
+			userChatsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+				@Override
+				public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+					chats.clear();
+					
+					if (documentSnapshot.get("SingleChats").toString().equals(""))
+						return;
+					
+					Log.d(LOG.INFORMATION, "ChatReference1 : "  + documentSnapshot.getData().toString());
+					
+					Log.d(LOG.INFORMATION, "ChatReference2 : "  + documentSnapshot.get("SingleChats").toString());
+					
+					chats.putAll((Map<String, String>)documentSnapshot.get("SingleChats"));
+					
+					Map<String, String> chats = (Map<String, String>)documentSnapshot.get("SingleChats");
+					
+					Log.d(LOG.INFORMATION, "Chat IDs: " + chats.toString());
+					
+					//
+					//groupInfo.clear();
+					
+					if (true)
+						return;
+					
+					List<Task<?>> getGroupInfoTasks = new ArrayList<>();
+					for (String chat : chats.keySet()){
+						if (!chatInfo.containsKey(chat) /*|| true*/){
+							DocumentReference groupDocumentReference = (DocumentReference)db.collection("Groups").document(chat);
+							//getGroupInfoTasks.add(groupDocumentReference.get());
+							
+							groupDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+								@Override
+								public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+									groupInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
+									for (String key : groupInfoRunnables.keySet()){
+										Runnable runnable = groupInfoRunnables.get(key);
+										if (runnable != null)
+											runnable.run();
+									}
+								}
+							});
+							
+						}
+					}
+				}
+			});
 		}
+		
+		public static Task<Void> addFriend(final String friendID){
+			DocumentReference userReference = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
+			DocumentReference friendReference = db.collection(Collections.USERS).document(friendID);
+			
+			final Map<String, Object> addFriendMap = new HashMap<>();
+			addFriendMap.put("Friends", FieldValue.arrayUnion(friendID));
+			Task<Void> addFriendTask = userReference.update(addFriendMap);
+			
+			final Map<String, Object> addFriendMap2 = new HashMap<>();
+			addFriendMap2.put("Friends", FieldValue.arrayUnion(auth.getCurrentUser().getUid()));
+			Task<Void> addFriendTask2 = friendReference.update(addFriendMap2);
+			
+			
+			/*
+			final Map<String, Object> f1 = new HashMap<>();
+			Map<String, Object> m1 = new HashMap<>();
+			m1.put(auth.getCurrentUser().getUid(), chatReference.getId());
+			f1.put(auth.getCurrentUser().getUid(), chatReference.getId());
+			db.collection("UserChats").document(friendID).update(f1);
+			
+			final Map<String, Object> f2 = new HashMap<>();
+			Map<String, Object> m2 = new HashMap<>();
+			m2.put(friendID, chatReference.getId());
+			f2.put(friendID, chatReference.getId());
+			db.collection("UserChats").document(auth.getCurrentUser().getUid()).update(f2);
+			*/
+			
+			final DocumentReference chatReference = db.collection("Chats").document();
+			final Map<String, Object> chatData = new HashMap<>();
+			ArrayList<String> users = new ArrayList<>();
+			users.add(friendID);
+			users.add(auth.getCurrentUser().getUid());
+			chatData.put("LastMessageTimestamp", 0);
+			ArrayList<String> chatMessages = new ArrayList<>();
+			chatData.put("Messages", ""); //empty message to create the field
+			chatData.put("Name", "");
+			chatData.put("Users", users);
+			
+			final DocumentReference userChatsReference = db.collection("UserChats").document(auth.getCurrentUser().getUid());
+			userChatsReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+				@Override
+				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+					DocumentSnapshot documentSnapshot = task.getResult();
+					Map<String, Object> data;
+					if (documentSnapshot.get("SingleChats").toString().equals("")){
+						data = new HashMap<>();
+					} else {
+						data = (Map<String, Object>)documentSnapshot.get("SingleChats");
+					}
+					
+					Log.d(LOG.INFORMATION, "kjlkjofwe : " + data.toString());
+					if (!data.containsKey(friendID)){
+						data.put(friendID, chatReference.getId());
+						Map<String, Object> objectMap = new HashMap<>();
+						objectMap.put("SingleChats", data);
+						userChatsReference.update(objectMap);
+						Task<Void> createChatReference = chatReference.set(chatData);
+					}
+				}
+			});
+			
+			final DocumentReference userChatsReference2 = db.collection("UserChats").document(friendID);
+			userChatsReference2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+				@Override
+				public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+					DocumentSnapshot documentSnapshot = task.getResult();
+					Map<String, Object> data;
+					if (documentSnapshot.get("SingleChats").toString().equals("")){
+						data = new HashMap<>();
+					} else {
+					 	data = (Map<String, Object>)documentSnapshot.get("SingleChats");
+					}
+					
+					Log.d(LOG.INFORMATION, "kjlkjofwe : " + data.toString());
+					if (!data.containsKey(auth.getCurrentUser().getUid())){
+						data.put(auth.getCurrentUser().getUid(), chatReference.getId());
+						Map<String, Object> objectMap = new HashMap<>();
+						objectMap.put("SingleChats", data);
+						userChatsReference2.update(objectMap);
+						Task<Void> createChatReference = chatReference.set(chatData);
+					}
+				}
+			});
+			
+			return addFriendTask2;
+		}
+		
+		public static Task<Void> removeFriend(String friendID){
+			DocumentReference userReference = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
+			DocumentReference friendReference = db.collection(Collections.USERS).document(friendID);
+			
+			final Map<String, Object> addFriendMap = new HashMap<>();
+			addFriendMap.put("Friends", FieldValue.arrayRemove(friendID));
+			Task<Void> addFriendTask = userReference.update(addFriendMap);
+			
+			final Map<String, Object> addFriendMap2 = new HashMap<>();
+			addFriendMap2.put("Friends", FieldValue.arrayRemove(auth.getCurrentUser().getUid()));
+			Task<Void> addFriendTask2 = friendReference.update(addFriendMap2);
+			
+			return addFriendTask2;
+		}
+		
+		
 	}
+	
+	public static Task<Void> createGroup(String name, ArrayList<String> users){
+		DocumentReference chatReference = HelperClass.db.collection("Chats").document();
+		Map<String, Object> groupData = new HashMap<>();
+		
+		groupData.put("Chat", chatReference.getId());
+		groupData.put("Name", name);
+		groupData.put("Owner", auth.getCurrentUser().getUid().toString());
+		groupData.put("Users", users);
+		groupData.put("Lists", "");
+		
+		DocumentReference groupReference = HelperClass.db.collection("Groups").document();
+		Task<Void> createGroupTask = groupReference.set(groupData);
+		
+		Map<String, Object> chatData = new HashMap<>();
+		chatData.put("LastMessageTimestamp", 0);
+		ArrayList<String> chatMessages = new ArrayList<>();
+		chatData.put("Messages", ""); //empty message to create the field
+		chatData.put("Name", name);
+		chatData.put("Users", users);
+		Task<Void> createChatReference = chatReference.set(chatData);
+		
+		for (String userID : users){
+			DocumentReference userGroupReference = (DocumentReference)HelperClass.db.collection("UserGroups").document(userID);
+			final Map<String, Object> addGroupMap = new HashMap<>();
+			addGroupMap.put("Groups", FieldValue.arrayUnion(groupReference.getId()));
+			Task<Void> addFriendTask = userGroupReference.update(addGroupMap);
+		}
+		
+		return createGroupTask;
+		
+	}
+	
+	public static Task<Void> createUser(String userID, String firstName, String lastName, String dateOfBirth, String location, String email, String password, String securityQuestion, String answer){
+		DocumentReference newUserReference = db.collection(Collections.USERS).document(userID);
+		DocumentReference newUserChatsReference = db.collection("UserChats").document(userID);
+		DocumentReference newUserGroupsReference = db.collection("UserGroups").document(userID);
+		
+		List<Task<?>> tasks = new ArrayList<>();
+		
+		ArrayList<String> emptyArrayList = new ArrayList<>();
+		emptyArrayList.add("");
+		
+		Map<String, String> emptyMap = new HashMap<>();
+		emptyMap.put("", "");
+		
+		Map<String, Object> userData = new HashMap<>();
+		userData.put("FirstName", firstName);
+		userData.put("LastName", lastName);
+		userData.put("Location", location);
+		userData.put("Email", email);
+		userData.put("SecurityQuestion", securityQuestion);
+		userData.put("SecurityAnswer", answer);
+		userData.put("Deleted", false);
+		userData.put("Friends", "");
+		
+		Map<String, Object> userChatData = new HashMap<>();
+		userChatData.put("SingleChats", "");
+		
+		Map<String, Object> userGroupsData = new HashMap<>();
+		userGroupsData.put("Groups", "");
+		
+		tasks.add(newUserReference.set(userData));
+		tasks.add(newUserChatsReference.set(userChatData));
+		tasks.add(newUserGroupsReference.set(userGroupsData));
+		
+		return Tasks.whenAll(tasks);
+	}
+	
 }

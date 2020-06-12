@@ -1,15 +1,18 @@
 package com.social_distancing.app;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,6 +21,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 import com.social_distancing.app.HelperClass;
@@ -36,6 +40,20 @@ public class HomeTest extends AppCompatActivity {
 		final Button userprofile = (Button)findViewById(R.id.userprofile);
 		final Button chatTest = (Button)findViewById(R.id.chatTest);
 		final LinearLayout rootLayout = (LinearLayout)findViewById(R.id.rootLayout);
+		
+		
+		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		alertDialog.setTitle("Test1");
+		alertDialog.setMessage("Test2");
+		
+		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		View view = inflater.inflate(R.layout.activity_signup_page, null);
+		
+		ScrollView scrollView = new ScrollView(this);
+		scrollView.addView(view);
+		
+		alertDialog.setView(scrollView);
 
 		
 		if (true) {
@@ -74,39 +92,59 @@ public class HomeTest extends AppCompatActivity {
 						});
 					}
 					
-					
-					DocumentReference documentReference = HelperClass.db.collection("UserChats").document(HelperClass.auth.getCurrentUser().getUid().toString());
-					documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-						@Override
-						public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-							if (task.isSuccessful()){
-								DocumentSnapshot documentSnapshot = (DocumentSnapshot)task.getResult();
-								Map<String, Object> data = documentSnapshot.getData();
-								ArrayList<String> chats = (ArrayList<String>)data.get("Chats");
-								for (final String chat: chats){
-									DocumentReference chatDocumentReference = HelperClass.db.collection(Collections.CHATS).document(chat);
-									chatDocumentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-										@Override
-										public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-											if (task.isSuccessful()){
-												DocumentSnapshot chatDocumentSnapshot = (DocumentSnapshot)task.getResult();
-												Map<String, Object> chatData = chatDocumentSnapshot.getData();
-												TextView textView = new TextView(context);
-												textView.setText(chatData.get(Collections.Chat.NAME).toString() + " : " + chatData.get(Collections.Chat.USERS).toString());
-												rootLayout.addView(textView);
-											}
-										}
-									});
+					for (final String chat: (ArrayList<String>)User.userInfo.get("GroupChats")){
+						DocumentReference chatDocumentReference = HelperClass.db.collection(Collections.CHATS).document(chat);
+						chatDocumentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+							@Override
+							public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+								if (task.isSuccessful()){
+									DocumentSnapshot chatDocumentSnapshot = (DocumentSnapshot)task.getResult();
+									Map<String, Object> chatData = chatDocumentSnapshot.getData();
+									TextView textView = new TextView(context);
+									textView.setText(chatData.get(Collections.Chat.NAME).toString() + " : " + chatData.get(Collections.Chat.USERS).toString());
+									rootLayout.addView(textView);
 								}
 							}
-						}
-					});
+						});
+					}
+					
+					alertDialog.show();
+					
+					if (false) {
+						
+						
+						DocumentReference documentReference = HelperClass.db.collection("UserChats").document(HelperClass.auth.getCurrentUser().getUid().toString());
+						documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+							@Override
+							public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+								if (task.isSuccessful()) {
+									DocumentSnapshot documentSnapshot = (DocumentSnapshot) task.getResult();
+									Map<String, Object> data = documentSnapshot.getData();
+									ArrayList<String> chats = (ArrayList<String>) data.get("Chats");
+									for (final String chat : chats) {
+										DocumentReference chatDocumentReference = HelperClass.db.collection(Collections.CHATS).document(chat);
+										chatDocumentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+											@Override
+											public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+												if (task.isSuccessful()) {
+													DocumentSnapshot chatDocumentSnapshot = (DocumentSnapshot) task.getResult();
+													Map<String, Object> chatData = chatDocumentSnapshot.getData();
+													TextView textView = new TextView(context);
+													textView.setText(chatData.get(Collections.Chat.NAME).toString() + " : " + chatData.get(Collections.Chat.USERS).toString());
+													rootLayout.addView(textView);
+												}
+											}
+										});
+									}
+								}
+							}
+						});
+					}
 				}
 			});
 		}
 		
 
-		
 	}
 	
 }
