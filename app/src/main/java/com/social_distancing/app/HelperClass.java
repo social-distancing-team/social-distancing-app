@@ -144,6 +144,11 @@ public class HelperClass {
 		
 		public static boolean logout() {
 			if (auth.getCurrentUser() != null) {
+				
+				for (String key : listenerRegistrationMap.keySet()){
+					((ListenerRegistration)listenerRegistrationMap.get(key)).remove();
+				}
+				
 				auth.signOut();
 				Log.d(LOG.INFORMATION, "Logged out.");
 				
@@ -317,15 +322,17 @@ public class HelperClass {
 			return userInfoReference.update(addFriendMap);
 		}
 		
+		final static Map<String, ListenerRegistration> listenerRegistrationMap = new HashMap<>();
+		
 		public static void setupListeners(){
-			final String userID = auth.getCurrentUser().getUid().toString();
+			String userID = auth.getCurrentUser().getUid().toString();
 			
 			DocumentReference userInfoReference = db.collection(Collections.USERS).document(userID);
 			DocumentReference userChatsReference = db.collection("UserChats").document(userID);
 			DocumentReference userGroupsReference = db.collection("UserGroups").document(userID);
 			DocumentReference userListsReference = db.collection("UserLists").document(userID);
 			
-			userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+			ListenerRegistration userListener = userInfoReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 				@Override
 				public void onEvent(@Nullable final DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 					Log.d(LOG.INFORMATION, "User Information changed.");
@@ -392,7 +399,7 @@ public class HelperClass {
 				}
 			});
 			
-			userGroupsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+			ListenerRegistration groupListener = userGroupsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 				@Override
 				public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 					groups.clear();
@@ -456,7 +463,7 @@ public class HelperClass {
 			});
 			
 			
-			userChatsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+			ListenerRegistration chatsListener = userChatsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 				@Override
 				public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 					chats.clear();
@@ -502,6 +509,10 @@ public class HelperClass {
 					}
 				}
 			});
+			
+			listenerRegistrationMap.put("user", userListener);
+			listenerRegistrationMap.put("group", groupListener);
+			listenerRegistrationMap.put("chat", chatsListener);
 		}
 		
 		public static Task<Void> addFriend(final String friendID){
