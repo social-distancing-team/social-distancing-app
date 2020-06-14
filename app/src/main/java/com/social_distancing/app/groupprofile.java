@@ -1,3 +1,9 @@
+/*
+ *	Project:		Remote Life
+ * 	Last edited:	13/06/2020
+ * 	Author:			Karan Bajwa
+ */
+
 package com.social_distancing.app;
 
 import androidx.annotation.NonNull;
@@ -5,10 +11,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+/*
+OS and UI
+ */
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +36,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/*
+Tasks, Async and Firebase
+ */
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -35,28 +46,35 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.rpc.Help;
+
+/*
+Collections
+ */
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/*
+Helper class and functions written by us
+ */
 import com.social_distancing.app.HelperClass;
 import com.social_distancing.app.HelperClass.Collections;
 import com.social_distancing.app.HelperClass.LOG;
 import com.social_distancing.app.HelperClass.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class groupprofile extends AppCompatActivity {
 	
 	Context context = this;
 	
-	final Map<String, Map<String, Object>> userInfo = new HashMap<>();
+	//Cache the info of each group member
 	final ArrayList<String> usersList = new ArrayList<>();
-	final Map<String, Object> groupData = new HashMap<>();
+	final Map<String, Map<String, Object>> userInfo = new HashMap<>();
 	
-	final Map<String, Map<String, Object>> listInfo = new HashMap<>();
+	//Cache the user list IDs and the info
 	final ArrayList<String> listsList = new ArrayList<>();
-	final Map<String, Object> listData = new HashMap<>();
+	final Map<String, Map<String, Object>> listInfo = new HashMap<>();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +83,7 @@ public class groupprofile extends AppCompatActivity {
 		getSupportActionBar().hide();
 		
 		final String groupID = getIntent().getStringExtra("groupID");
-		final String finalGroupID = groupID;
-		
-		String groupName = getIntent().getStringExtra("groupName");
-		final String finalGroupName = groupName;
-		
+		final String groupName = getIntent().getStringExtra("groupName");
 		
 		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
@@ -94,11 +108,10 @@ public class groupprofile extends AppCompatActivity {
 		final Button button_CreateList = (Button)findViewById(R.id.button_CreateList);
 		button_CreateList.setVisibility(View.GONE);
 		
-		
 		textView_GroupName.setText(groupName);
 		
 		Map<String, Object> groupData = User.groupInfo.get(groupID);
-		ArrayList<String> groupUsers = (ArrayList<String>)groupData.get("Users");
+		ArrayList<String> groupUsers = (ArrayList<String>)groupData.get(Collections.Group.USERS);
 		
 		textView_MembersCount.setText("(" + Integer.toString(groupUsers.size()) + ")");
 		
@@ -132,45 +145,14 @@ public class groupprofile extends AppCompatActivity {
 						usersNameList.add(userData.get(Collections.Users.FIRSTNAME).toString() + " " + userData.get(Collections.Users.LASTNAME).toString());
 				}
 				
-				//Log.d(LOG.INFORMATION, "friendsList" + friendsList.toString());
 				final ArrayAdapter<String> adapterMembers = new ArrayAdapter<String>(context,
-						android.R.layout.simple_list_item_1, android.R.id.text1, usersNameList){
-					
-					@Override
-					public View getView(int position, View convertView, ViewGroup parent){
-						// Get the Item from ListView
-						View view = super.getView(position, convertView, parent);
-						
-						// Initialize a TextView for ListView each Item
-						TextView tv = (TextView) view.findViewById(android.R.id.text1);
-						int color = tv.getCurrentTextColor();
-						
-						// Set the text color of TextView (ListView Item)
-						if (!HelperClass.auth.getCurrentUser().getUid().equals(usersKeyList.get(position))){
-							//tv.setTextColor(Color.RED);
-							Log.d(LOG.WARNING, usersKeyList.get(position) + ", MAKING IT REEEEEEEEEEEEEEEEEEEEEDDDDDD");
-						} else {
-							//tv.setTextColor(Color.BLUE);
-							Log.d(LOG.WARNING, usersKeyList.get(position) + ", 233452535rr5");
-						}
-						
-						
-						//Log.d(LOG.INFORMATION, "UserKey: " + usersKeyList.get(position).toString());
-						
-						// Generate ListView Item using TextView
-						return view;
-					}
-				};
-				
+						android.R.layout.simple_list_item_1, android.R.id.text1, usersNameList);
 				listView_Members.setAdapter(adapterMembers);
 				
 				listView_Members.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 						final Intent intent = new Intent(context, userprofile.class);
-						//Log.d(LOG.WARNING, "ABCDE: " + friendsKeyList.get(position).toString());
-						//Log.d(LOG.WARNING, "FGHJI: " + friendsNameList.get(position));
-						
 						if (HelperClass.auth.getCurrentUser().getUid().equals(usersKeyList.get(position))) {
 							Log.d(LOG.WARNING, "iiiiiiii");
 							return;
@@ -187,54 +169,19 @@ public class groupprofile extends AppCompatActivity {
 					}
 				});
 				
-				/*
+				//Long click is for removing a member from the group
 				listView_Members.setLongClickable(true);
 				listView_Members.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 					@Override
 					public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-						if (!User.friendInfo.containsKey(usersKeyList.get(position))) {
-							// dialog
-							final AlertDialog.Builder removeMemberFromGroupDialog = new AlertDialog.Builder(context);
-							removeMemberFromGroupDialog.setTitle("Add friend");// + listView_Friends.getItemAtPosition(position).toString() + "?");
-							removeMemberFromGroupDialog.setMessage("Do you to add " + listView_Members.getItemAtPosition(position).toString() + " as a friend?");
-							removeMemberFromGroupDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									String memberID = usersKeyList.get(position);
-									User.addFriend(memberID).addOnCompleteListener(new OnCompleteListener<Void>() {
-										@Override
-										public void onComplete(@NonNull Task<Void> task) {
-											if (task.isSuccessful()){
-												Toast.makeText(context, "Successfully added a new friend.", Toast.LENGTH_SHORT).show();
-											} else {
-												Toast.makeText(context, "Error adding friend.\n" + task.getException().toString(), Toast.LENGTH_SHORT).show();
-											}
-										}
-									});
-								}
-							});
-							removeMemberFromGroupDialog.setNegativeButton("No", null);
-							
-							final AlertDialog dialog = removeMemberFromGroupDialog.create();
-							dialog.show();
-						}
-						
-						return false;
-					}
-				});
-				*/
-				
-				listView_Members.setLongClickable(true);
-				
-				listView_Members.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-					@Override
-					public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-						if (User.groupInfo.get(groupID).get("Owner").toString().equals(HelperClass.auth.getCurrentUser().getUid())){
+						//Check if we're the group owner
+						if (User.groupInfo.get(groupID).get(Collections.Group.OWNER).toString().equals(HelperClass.auth.getCurrentUser().getUid())){
+							//We can't remove ourself
 							if (usersList.get(position).toString().equals(HelperClass.auth.getCurrentUser().getUid()))
 								return true;
 							
 							final AlertDialog.Builder removeMemberFromGroupDialog = new AlertDialog.Builder(context);
-							removeMemberFromGroupDialog.setTitle("Remove member from group");// + listView_Friends.getItemAtPosition(position).toString() + "?");
+							removeMemberFromGroupDialog.setTitle("Remove member from group");
 							removeMemberFromGroupDialog.setMessage("Are you sure you want to remove " + listView_Members.getItemAtPosition(position).toString() + " from this group?");
 							removeMemberFromGroupDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 								@Override
@@ -283,56 +230,18 @@ public class groupprofile extends AppCompatActivity {
 					Map<String, Object> listData = (Map<String, Object>)listInfo.get(listID);
 					
 					listsNameList.add(listData.get("Name").toString());
-					
-					/*
-					if (User.groupInfo.get(groupID).get("Owner").toString().equals(userID)){
-						usersNameList.add(userData.get(Collections.Users.FIRSTNAME).toString() + " " + userData.get(Collections.Users.LASTNAME).toString() + " (Owner)");
-					} else
-						usersNameList.add(userData.get(Collections.Users.FIRSTNAME).toString() + " " + userData.get(Collections.Users.LASTNAME).toString());
-					
-					 */
 				}
 				
-				//Log.d(LOG.INFORMATION, "friendsList" + friendsList.toString());
 				final ArrayAdapter<String> adapterLists = new ArrayAdapter<String>(context,
-						android.R.layout.simple_list_item_1, android.R.id.text1, listsNameList){
-					
-					@Override
-					public View getView(int position, View convertView, ViewGroup parent){
-						// Get the Item from ListView
-						View view = super.getView(position, convertView, parent);
-						/*
-						// Initialize a TextView for ListView each Item
-						TextView tv = (TextView) view.findViewById(android.R.id.text1);
-						int color = tv.getCurrentTextColor();
-						
-						// Set the text color of TextView (ListView Item)
-						if (!HelperClass.auth.getCurrentUser().getUid().equals(usersKeyList.get(position))){
-							//tv.setTextColor(Color.RED);
-							Log.d(LOG.WARNING, usersKeyList.get(position) + ", MAKING IT REEEEEEEEEEEEEEEEEEEEEDDDDDD");
-						} else {
-							//tv.setTextColor(Color.BLUE);
-							Log.d(LOG.WARNING, usersKeyList.get(position) + ", 233452535rr5");
-						}
-						*/
-						
-						//Log.d(LOG.INFORMATION, "UserKey: " + usersKeyList.get(position).toString());
-						
-						// Generate ListView Item using TextView
-						return view;
-					}
-				};
-				
+						android.R.layout.simple_list_item_1, android.R.id.text1, listsNameList);
 				listView_Lists.setAdapter(adapterLists);
 				
+				//Clicking a list opens the list viewer
 				listView_Lists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-						//Log.d(LOG.WARNING, "ABCDE: " + friendsKeyList.get(position).toString());
-						//Log.d(LOG.WARNING, "FGHJI: " + friendsNameList.get(position));
 						
 						if (HelperClass.auth.getCurrentUser().getUid().equals(listsKeyList.get(position))) {
-							Log.d(LOG.WARNING, "iiiiiiii");
 							return;
 						}
 						
@@ -346,17 +255,16 @@ public class groupprofile extends AppCompatActivity {
 				
 				listView_Lists.setLongClickable(true);
 				
+				//Long click is for deleting list
 				listView_Lists.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 					@Override
 					public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-						if (User.groupInfo.get(groupID).get("Owner").toString().equals(HelperClass.auth.getCurrentUser().getUid())){
-							if (usersList.get(position).toString().equals(HelperClass.auth.getCurrentUser().getUid()))
-								return true;
+						if (User.groupInfo.get(groupID).get(Collections.Group.OWNER).toString().equals(HelperClass.auth.getCurrentUser().getUid())){
 							
-							final AlertDialog.Builder removeMemberFromGroupDialog = new AlertDialog.Builder(context);
-							removeMemberFromGroupDialog.setTitle("Delete grou list");// + listView_Friends.getItemAtPosition(position).toString() + "?");
-							removeMemberFromGroupDialog.setMessage("Are you sure you want to delete " + listView_Lists.getItemAtPosition(position).toString() + " from this group?");
-							removeMemberFromGroupDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+							final AlertDialog.Builder deleteListFromGroupDialog = new AlertDialog.Builder(context);
+							deleteListFromGroupDialog.setTitle("Delete group list");
+							deleteListFromGroupDialog.setMessage("Are you sure you want to delete " + listView_Lists.getItemAtPosition(position).toString() + " from this group?");
+							deleteListFromGroupDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
 									String listID = listsKeyList.get(position);
@@ -368,9 +276,9 @@ public class groupprofile extends AppCompatActivity {
 									
 								}
 							});
-							removeMemberFromGroupDialog.setNegativeButton("No", null);
+							deleteListFromGroupDialog.setNegativeButton("No", null);
 							
-							final AlertDialog dialog = removeMemberFromGroupDialog.create();
+							final AlertDialog dialog = deleteListFromGroupDialog.create();
 							dialog.show();
 						}
 						return true;
@@ -388,16 +296,16 @@ public class groupprofile extends AppCompatActivity {
 		};
 		
 		
-		DocumentReference groupReference = HelperClass.db.collection("Groups").document(groupID);
+		DocumentReference groupReference = HelperClass.db.collection(Collections.GROUPS).document(groupID);
 		groupReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 			@Override
 			public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 				Map<String, Object> newGroupData = documentSnapshot.getData();
-				ArrayList<String> userIDs = (ArrayList<String>)newGroupData.get("Users");
+				ArrayList<String> userIDs = (ArrayList<String>)newGroupData.get(Collections.USERS);
 				usersList.clear();
 				usersList.addAll(userIDs);
 				
-				if (newGroupData.get("Owner").toString().equals(HelperClass.auth.getCurrentUser().getUid())){
+				if (newGroupData.get(Collections.Group.OWNER).toString().equals(HelperClass.auth.getCurrentUser().getUid())){
 					button_CreateList.setVisibility(View.VISIBLE);
 					
 					button_AddFriendToGroup.setVisibility(View.VISIBLE);
@@ -412,7 +320,6 @@ public class groupprofile extends AppCompatActivity {
 							addMembersToGroupDialog.setNegativeButton("Cancel", null);
 							
 							final ListView listView_Friends = (ListView)friendsView.findViewById(R.id.listView_Friends);
-							//final EditText editText_GroupName = (EditText)friendsView.findViewById(R.id.editText_GroupName);
 							LinearLayout linearLayout_Groups = (LinearLayout)friendsView.findViewById(R.id.linearLayout_Group);
 							linearLayout_Groups.setVisibility(View.GONE);
 							
@@ -438,33 +345,29 @@ public class groupprofile extends AppCompatActivity {
 							addMembersToGroupDialog.setPositiveButton("Add", new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									ArrayList<String> friendIDsToCreateGroupWith = new ArrayList<>();
+									ArrayList<String> friendIDsToAddToGroup = new ArrayList<>();
 									for (int i = 0; i < listView_Friends.getCount(); i++) {
 										Log.d(LOG.INFORMATION, "Checking " + listView_Friends.getItemAtPosition(i).toString());
 										if (listView_Friends.isItemChecked(i)) {
 											Log.d(LOG.INFORMATION, "You have checked " + addableFriendsKeyList.get(i) + " (" + addblefriendsNameList.get(i) + " )");
-											friendIDsToCreateGroupWith.add(addableFriendsKeyList.get(i));
+											friendIDsToAddToGroup.add(addableFriendsKeyList.get(i));
 										}
 									}
-									for (String friendID : friendIDsToCreateGroupWith){
-										Log.d(LOG.INFORMATION, "ASD#E#E@@EER%%R%R");
-										DocumentReference userGroupReference = HelperClass.db.collection("UserGroups").document(friendID);
-										final Map<String, Object> removeGroupMap = new HashMap<>();
-										removeGroupMap.put("Groups", FieldValue.arrayUnion(groupID));
-										Task<Void> removeUserGroupTask = userGroupReference.update(removeGroupMap);
+									for (String friendID : friendIDsToAddToGroup){
+										DocumentReference userGroupReference = HelperClass.db.collection(Collections.USERGROUPS).document(friendID);
+										final Map<String, Object> addMemberToUserGroupData = new HashMap<>();
+										addMemberToUserGroupData.put(Collections.UserGroup.GROUPS, FieldValue.arrayUnion(groupID));
+										Task<Void> addMemberToUserGroupTask = userGroupReference.update(addMemberToUserGroupData);
 										
-										DocumentReference groupReference = HelperClass.db.collection("Groups").document(groupID);
-										final Map<String, Object> removeGroupMap2 = new HashMap<>();
-										removeGroupMap2.put("Users", FieldValue.arrayUnion(friendID));
-										Task<Void> removeGroupTask = groupReference.update(removeGroupMap2);
+										DocumentReference groupReference = HelperClass.db.collection(Collections.GROUPS).document(groupID);
+										final Map<String, Object> addMemberToGroupData = new HashMap<>();
+										addMemberToGroupData.put("Users", FieldValue.arrayUnion(friendID));
+										Task<Void> addMemberToGroupTask = groupReference.update(addMemberToGroupData);
 									}
 								}
 							});
 							
-							
 							final AlertDialog dialog = addMembersToGroupDialog.create();
-							
-
 							
 							listView_Friends.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 								@Override
@@ -494,7 +397,6 @@ public class groupprofile extends AppCompatActivity {
 						userDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 							@Override
 							public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-								Log.d(LOG.INFORMATION, "134533453453");
 								userInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
 								getUsersInformation.run();
 							}
@@ -508,10 +410,10 @@ public class groupprofile extends AppCompatActivity {
 				
 				Log.d(LOG.INFORMATION, "NewGroupData: " + newGroupData.toString());
 				
-				if (newGroupData.get("Lists").toString().equals(""))
+				if (newGroupData.get(Collections.Group.LISTS).toString().equals(""))
 					return;
 				
-				ArrayList<String> listIDs = (ArrayList<String>)newGroupData.get("Lists");
+				ArrayList<String> listIDs = (ArrayList<String>)newGroupData.get(Collections.Group.LISTS);
 				
 				if (listIDs.size() == 0)
 					return;
@@ -528,7 +430,6 @@ public class groupprofile extends AppCompatActivity {
 						listDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 							@Override
 							public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-								Log.d(LOG.INFORMATION, "134533453453");
 								listInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
 								getListsInformation.run();
 							}
@@ -567,16 +468,16 @@ public class groupprofile extends AppCompatActivity {
 		button_CreateList.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final AlertDialog.Builder addNewFriendDialog = new AlertDialog.Builder(context);
-				addNewFriendDialog.setTitle("Create a new group list");
-				addNewFriendDialog.setMessage("Enter name of the new list.");
+				final AlertDialog.Builder createListDialog = new AlertDialog.Builder(context);
+				createListDialog.setTitle("Create a new group list");
+				createListDialog.setMessage("Enter name of the new list.");
 				final EditText editText = new EditText(context);
 				editText.setPadding(10,0,0,0);
 				
 				
 				
-				addNewFriendDialog.setView(editText);
-				addNewFriendDialog.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+				createListDialog.setView(editText);
+				createListDialog.setPositiveButton("Create", new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								final String listName = editText.getText().toString();
@@ -599,8 +500,8 @@ public class groupprofile extends AppCompatActivity {
 							}
 						});
 				
-				addNewFriendDialog.setNegativeButton("Cancel", null);
-				final AlertDialog dialog = addNewFriendDialog.create();
+				createListDialog.setNegativeButton("Cancel", null);
+				final AlertDialog dialog = createListDialog.create();
 				
 				editText.addTextChangedListener(new TextWatcher() {
 					@Override
@@ -610,6 +511,7 @@ public class groupprofile extends AppCompatActivity {
 					
 					@Override
 					public void onTextChanged(CharSequence s, int start, int before, int count) {
+						//only allow creation of the list if the list name is not empty
 						if (count > 0){
 							dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
 						} else {

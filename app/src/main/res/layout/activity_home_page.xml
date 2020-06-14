@@ -29,7 +29,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/teamMembers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="K.\tBajwa\t\tC.\tCabato\t\tC.\tDing\t\tP.\tKaz\t\t\nR.\tKeshava\t\tM.\tMinchenko\t\tS.\tQu"
@@ -66,7 +65,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/projectTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="#0003DAC5"
@@ -76,7 +74,6 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/subjectName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Professional Studio A"
@@ -205,7 +202,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textView23"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forgot your password?" />

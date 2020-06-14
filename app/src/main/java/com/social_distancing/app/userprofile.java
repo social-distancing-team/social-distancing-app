@@ -1,8 +1,17 @@
+/*
+ *	Project:		Remote Life
+ * 	Last edited:	13/06/2020
+ * 	Author:			Karan Bajwa
+ */
+
 package com.social_distancing.app;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+/*
+OS and UI
+ */
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -23,27 +32,35 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/*
+Tasks, Async and Firebase
+ */
 import com.google.firebase.firestore.DocumentReference;
-
-import org.w3c.dom.Document;
-
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.social_distancing.app.HelperClass;
-import com.social_distancing.app.HelperClass.Collections;
-import com.social_distancing.app.HelperClass.LOG;
-import com.social_distancing.app.HelperClass.User;
 
+/*
+Collections
+ */
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+Helper class and functions written by us
+ */
+import com.social_distancing.app.HelperClass;
+import com.social_distancing.app.HelperClass.Collections;
+import com.social_distancing.app.HelperClass.LOG;
+import com.social_distancing.app.HelperClass.User;
+
 public class userprofile extends AppCompatActivity {
 	
 	Context context = this;
-	final Map<String, Map<String, Object>> groupsInfo = new HashMap<>();
+	
+	//Keep an ArrayList of the group IDs
 	final ArrayList<String> groupsList = new ArrayList<>();
 	
 	@Override
@@ -75,8 +92,6 @@ public class userprofile extends AppCompatActivity {
 		final ListView listView_Lists = (ListView)findViewById(R.id.listView_Lists);
 		
 		final Button button_MessageUser = (Button)findViewById(R.id.button_MessageUser);
-		//final Button button_addFriend = (Button)findViewById(R.id.button_AddFriend);
-		//final Button button_addGroup = (Button)findViewById(R.id.button_AddGroup);
 		
 		final TextView textView_UserID = (TextView)findViewById(R.id.textView_UserID);
 		final TextView textView_UserFullName = (TextView)findViewById(R.id.textView_UserFullName);
@@ -98,9 +113,6 @@ public class userprofile extends AppCompatActivity {
 			}
 		});
 		
-		textView_LastSeen.setText("11/06/2020");
-		
-		
 		DocumentReference userInfoReference = HelperClass.db.collection(Collections.USERS).document(finalUserID);
 		DocumentReference userChatsReference = HelperClass.db.collection("UserChats").document(finalUserID);
 		DocumentReference userGroupsReference = HelperClass.db.collection("UserGroups").document(finalUserID);
@@ -114,7 +126,6 @@ public class userprofile extends AppCompatActivity {
 				textView_Location.setText(documentSnapshot.get(Collections.Users.LOCATION).toString());
 				
 				final List<String> friendsKeyList = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
-				//final List<String> friendsKeyList = new ArrayList<String>(User.friends);
 				final List<String> friendsNameList = new ArrayList<String>();
 				
 				Log.d(LOG.INFORMATION, "Friends friends: " + friendsKeyList.toString());
@@ -139,29 +150,8 @@ public class userprofile extends AppCompatActivity {
 					}
 				}
 				
-				//Log.d(LOG.INFORMATION, "friendsList" + friendsList.toString());
 				final ArrayAdapter<String> adapterFriends = new ArrayAdapter<String>(context,
-						android.R.layout.simple_list_item_1, android.R.id.text1, friendsNameList){
-					
-					@Override
-					public View getView(int position, View convertView, ViewGroup parent){
-						// Get the Item from ListView
-						View view = super.getView(position, convertView, parent);
-						
-						// Initialize a TextView for ListView each Item
-						TextView tv = (TextView) view.findViewById(android.R.id.text1);
-						
-						
-						// Set the text color of TextView (ListView Item)
-						if (!User.friendInfo.containsKey(friendsKeyList.get(position)))
-							;//tv.setTextColor(Color.RED);
-						
-						// Generate ListView Item using TextView
-						return view;
-					}
-				};
-				
-				
+						android.R.layout.simple_list_item_1, android.R.id.text1, friendsNameList);
 				
 				listView_Friends.setAdapter(adapterFriends);
 				
@@ -169,8 +159,6 @@ public class userprofile extends AppCompatActivity {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 						final Intent intent = new Intent(context, userprofile.class);
-						//Log.d(LOG.WARNING, "ABCDE: " + friendsKeyList.get(position).toString());
-						//Log.d(LOG.WARNING, "FGHJI: " + friendsNameList.get(position));
 						
 						if (finalUserID.equals(friendsKeyList.get(position)) || friendsKeyList.get(position).equals(HelperClass.auth.getCurrentUser().getUid())) //cant view self
 							return;
@@ -309,10 +297,6 @@ public class userprofile extends AppCompatActivity {
 				final Intent intent = new Intent(context, chat.class);
 				intent.putExtra("userID", User.friendInfo.get(userID).get("FirstName").toString());
 				intent.putExtra("name", textView_UserFullName.getText().toString());
-				
-				//Log.d(LOG.INFORMATION, "Chats: " + User.chats.toString());
-				
-				//Log.d(LOG.INFORMATION, "Chats2: " + User.chats.get(userID).toString());
 				
 				String chatID = User.chats.get(userID);
 				intent.putExtra("chatID", chatID);

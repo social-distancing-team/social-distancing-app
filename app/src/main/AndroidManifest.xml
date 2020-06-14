@@ -14,12 +14,7 @@
         <activity android:name=".grouplist"></activity>
         <activity android:name=".groupprofile" />
         <activity android:name=".userprofile" />
-        <activity
-            android:name=".navigationdrawertest"
-            android:label="@string/title_activity_navigationdrawertest"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".mainpage" />
-        <activity android:name=".register" />
         <activity android:name=".homePage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,20 +23,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".chat" />
-        <activity android:name=".Test_Intents" />
-        <activity android:name=".PasswordResetActivity" />
-        <activity android:name=".HomeTest" />
-        <activity android:name=".TesterActivity" />
-        <activity android:name=".UserManagement" />
-        <activity android:name=".ViewUserProfile" />
-        <activity android:name=".bottomnavigationdrawer" />
-        <activity android:name=".listItems" />
-        <activity android:name=".Examples_and_testing" />
-        <activity android:name=".Chats_Test" />
-        <activity android:name=".Lists_Test" />
-        <activity android:name=".UserPage" />
-        <activity android:name=".SignupPage" />
-        <activity android:name=".LoginPage" />
 
         <uses-library
             android:name="org.apache.http.legacy"

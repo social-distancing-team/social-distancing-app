@@ -1,42 +1,44 @@
+/*
+ *	Project:		Remote Life
+ * 	Last edited:	13/06/2020
+ * 	Author:			Karan Bajwa
+ */
+
 package com.social_distancing.app;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
+/*
+OS and UI
+ */
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/*
+Tasks, Async and Firebase
+ */
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.badge.BadgeDrawable;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.social_distancing.app.HelperClass;
-import com.social_distancing.app.HelperClass.Collections;
+
+/*
+Helper class and functions written by us
+ */
 import com.social_distancing.app.HelperClass.LOG;
 import com.social_distancing.app.HelperClass.User;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class homePage extends AppCompatActivity {
 	
@@ -47,6 +49,7 @@ public class homePage extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_home_page);
 		getSupportActionBar().hide();
+		
 		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		final EditText editText_Email = (EditText)findViewById(R.id.editText_Email);
@@ -189,15 +192,11 @@ public class homePage extends AppCompatActivity {
 			}
 		});
 		
+		//Reset password
 		button_ResetPassword.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				HelperClass.createUser("","firstName", "lastName", "", "location", "email", "", "securityQuestion", "securityAnswer").addOnCompleteListener(new OnCompleteListener<Void>() {
-					@Override
-					public void onComplete(@NonNull Task<Void> task) {
-						;
-					}
-				});
+			
 			}
 		});
 	}
