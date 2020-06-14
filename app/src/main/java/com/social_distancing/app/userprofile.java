@@ -76,30 +76,30 @@ public class userprofile extends AppCompatActivity {
 		final String finalUserName = userName;
 		
 		getSupportActionBar().hide();
-		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
-		final LinearLayout linearLayout_Friends = (LinearLayout)findViewById(R.id.linearLayout_Friends);
-		final Switch switch_Friends = (Switch)findViewById(R.id.switch_Friends);
+		final LinearLayout linearLayout_Friends = (LinearLayout) findViewById(R.id.linearLayout_Friends);
+		final Switch switch_Friends = (Switch) findViewById(R.id.switch_Friends);
 		
-		final LinearLayout linearLayout_Groups = (LinearLayout)findViewById(R.id.linearLayout_Groups);
-		final Switch switch_Groups = (Switch)findViewById(R.id.switch_Groups);
+		final LinearLayout linearLayout_Groups = (LinearLayout) findViewById(R.id.linearLayout_Groups);
+		final Switch switch_Groups = (Switch) findViewById(R.id.switch_Groups);
 		
-		final LinearLayout linearLayout_Chats = (LinearLayout)findViewById(R.id.linearLayout_Lists);
-		final Switch switch_Chats = (Switch)findViewById(R.id.switch_Chats);
+		final LinearLayout linearLayout_Chats = (LinearLayout) findViewById(R.id.linearLayout_Lists);
+		final Switch switch_Chats = (Switch) findViewById(R.id.switch_Chats);
 		
-		final ListView listView_Friends = (ListView)findViewById(R.id.listView_Friends);
-		final ListView listView_Groups = (ListView)findViewById(R.id.listView_Groups);
-		final ListView listView_Lists = (ListView)findViewById(R.id.listView_Lists);
+		final ListView listView_Friends = (ListView) findViewById(R.id.listView_Friends);
+		final ListView listView_Groups = (ListView) findViewById(R.id.listView_Groups);
+		final ListView listView_Lists = (ListView) findViewById(R.id.listView_Lists);
 		
-		final Button button_MessageUser = (Button)findViewById(R.id.button_MessageUser);
+		final Button button_MessageUser = (Button) findViewById(R.id.button_MessageUser);
 		
-		final TextView textView_UserID = (TextView)findViewById(R.id.textView_UserID);
-		final TextView textView_UserFullName = (TextView)findViewById(R.id.textView_UserFullName);
-		final TextView textView_LastSeen = (TextView)findViewById(R.id.textView_LastSeen);
-		final TextView textView_Location = (TextView)findViewById(R.id.textView_Location);
+		final TextView textView_UserID = (TextView) findViewById(R.id.textView_UserID);
+		final TextView textView_UserFullName = (TextView) findViewById(R.id.textView_UserFullName);
+		final TextView textView_LastSeen = (TextView) findViewById(R.id.textView_LastSeen);
+		final TextView textView_Location = (TextView) findViewById(R.id.textView_Location);
 		
-		final TextView textView_FriendsCount = (TextView)findViewById(R.id.textView_FriendsCount);
-		final TextView textView_GroupsCount = (TextView)findViewById(R.id.textView_GroupsCount);
+		final TextView textView_FriendsCount = (TextView) findViewById(R.id.textView_FriendsCount);
+		final TextView textView_GroupsCount = (TextView) findViewById(R.id.textView_GroupsCount);
 		
 		textView_UserFullName.setText(finalUserName);
 		textView_UserID.setText(finalUserID);
@@ -125,24 +125,24 @@ public class userprofile extends AppCompatActivity {
 				textView_UserFullName.setText(name);
 				textView_Location.setText(documentSnapshot.get(Collections.Users.LOCATION).toString());
 				
-				final List<String> friendsKeyList = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
+				final List<String> friendsKeyList = (ArrayList<String>) documentSnapshot.get(Collections.Users.FRIENDS);
 				final List<String> friendsNameList = new ArrayList<String>();
 				
 				Log.d(LOG.INFORMATION, "Friends friends: " + friendsKeyList.toString());
 				
-				for (String friendID : friendsKeyList){
+				for (String friendID : friendsKeyList) {
 					
-					if (HelperClass.auth.getCurrentUser().getUid().equals(friendID)){
+					if (HelperClass.auth.getCurrentUser().getUid().equals(friendID)) {
 						friendsNameList.add(User.userInfo.get("FirstName") + " " + User.userInfo.get("LastName") + " (You)");
 						continue;
 					}
 					
-					if (!User.friendInfo.containsKey(friendID) /*|| friendID.equals(HelperClass.auth.getCurrentUser().getUid())*/){
+					if (!User.friendInfo.containsKey(friendID) /*|| friendID.equals(HelperClass.auth.getCurrentUser().getUid())*/) {
 						friendsNameList.add(friendID);
 						continue;
 					}
-					Map<String, Object> friendUserData = (Map<String, Object>)User.friendInfo.get(friendID);
-					if (friendID.equals(HelperClass.auth.getCurrentUser().getUid())){
+					Map<String, Object> friendUserData = (Map<String, Object>) User.friendInfo.get(friendID);
+					if (friendID.equals(HelperClass.auth.getCurrentUser().getUid())) {
 						friendsNameList.add(friendUserData.get(Collections.Users.FIRSTNAME).toString() + " " + friendUserData.get(Collections.Users.LASTNAME).toString() + " (You)");
 					} else {
 						friendsNameList.add(friendUserData.get(Collections.Users.FIRSTNAME).toString() + " " + friendUserData.get(Collections.Users.LASTNAME).toString());
@@ -163,7 +163,7 @@ public class userprofile extends AppCompatActivity {
 						if (finalUserID.equals(friendsKeyList.get(position)) || friendsKeyList.get(position).equals(HelperClass.auth.getCurrentUser().getUid())) //cant view self
 							return;
 						
-						if (User.friendInfo.containsKey(friendsKeyList.get(position))){
+						if (User.friendInfo.containsKey(friendsKeyList.get(position))) {
 							intent.putExtra("userID", friendsKeyList.get(position));
 							intent.putExtra("userName", friendsNameList.get(position));
 							startActivity(intent);
@@ -174,12 +174,12 @@ public class userprofile extends AppCompatActivity {
 					}
 				});
 				
-				if (friendsNameList.size()>0){
+				if (friendsNameList.size() > 0) {
 					switch_Friends.setVisibility(View.VISIBLE);
 				} else {
 					switch_Friends.setVisibility(View.GONE);
 				}
-				if (friendsNameList.size() > 0 ){
+				if (friendsNameList.size() > 0) {
 					textView_FriendsCount.setText("(" + Integer.toString(friendsNameList.size()) + ")");
 				} else {
 					textView_FriendsCount.setText("");
@@ -188,28 +188,16 @@ public class userprofile extends AppCompatActivity {
 			}
 		});
 		
-		
 		userGroupsReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 			@Override
 			public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 				groupsList.clear();
 				
 				Map<String, Object> userGroupData = documentSnapshot.getData();
-				
-				if (!userGroupData.containsKey("Groups"))
+				if (userGroupData.get(Collections.UserGroup.GROUPS).toString().equals(""))
 					return;
 				
-				if (userGroupData.get("Groups").toString().equals(""))
-					return;
-				
-				ArrayList<String> groupIDs = (ArrayList<String>)userGroupData.get("Groups");
-				
-				if (groupIDs.size() == 0)
-					return;
-				
-				if (groupIDs.size() == 1 && groupIDs.get(0).toString().equals(""))
-					return;
-				
+				ArrayList<String> groupIDs = (ArrayList<String>) userGroupData.get(Collections.UserGroup.GROUPS);
 				groupsList.addAll(groupIDs);
 				
 				final List<String> groupsKeyList = new ArrayList<>();
@@ -218,8 +206,8 @@ public class userprofile extends AppCompatActivity {
 				
 				Log.d(LOG.INFORMATION, "USERGROUPS: " + groupsList.toString() + ", " + User.groupInfo.keySet().toString());
 				
-				for (String groupID : groupIDs){
-					if (User.groupInfo.containsKey(groupID)){
+				for (String groupID : groupIDs) {
+					if (User.groupInfo.containsKey(groupID)) {
 						groupsKeyList.add(groupID);
 						groupsNameList.add(User.groupInfo.get(groupID).get("Name").toString());
 					}
@@ -227,14 +215,12 @@ public class userprofile extends AppCompatActivity {
 				
 				final ArrayAdapter<String> adapterGroups = new ArrayAdapter<String>(context,
 						android.R.layout.simple_list_item_1, android.R.id.text1, groupsNameList);
-			
+				
 				listView_Groups.setAdapter(adapterGroups);
 				listView_Groups.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 						final Intent intent = new Intent(context, groupprofile.class);
-						//Log.d(LOG.WARNING, "ABCDE: " + friendsKeyList.get(position).toString());
-						//Log.d(LOG.WARNING, "FGHJI: " + friendsNameList.get(position));
 						intent.putExtra("groupID", groupsKeyList.get(position));
 						intent.putExtra("groupName", groupsNameList.get(position));
 						startActivity(intent);
@@ -242,12 +228,12 @@ public class userprofile extends AppCompatActivity {
 					}
 				});
 				
-				if (groupsKeyList.size()>0){
+				if (groupsKeyList.size() > 0) {
 					switch_Groups.setVisibility(View.VISIBLE);
 				} else {
 					switch_Groups.setVisibility(View.GONE);
 				}
-				if (groupsKeyList.size() > 0 ){
+				if (groupsKeyList.size() > 0) {
 					textView_GroupsCount.setText("(" + Integer.toString(groupsKeyList.size()) + ")");
 				} else {
 					textView_GroupsCount.setText("");
@@ -258,9 +244,9 @@ public class userprofile extends AppCompatActivity {
 		switch_Friends.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked){
+				if (isChecked) {
 					linearLayout_Friends.setVisibility(View.VISIBLE);
-				} else{
+				} else {
 					linearLayout_Friends.setVisibility(View.GONE);
 				}
 			}
@@ -269,11 +255,11 @@ public class userprofile extends AppCompatActivity {
 		switch_Groups.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked){
+				if (isChecked) {
 					linearLayout_Groups.setVisibility(View.VISIBLE);
 					//getGroupInformation.run();
 					
-				} else{
+				} else {
 					linearLayout_Groups.setVisibility(View.GONE);
 				}
 			}
@@ -283,9 +269,9 @@ public class userprofile extends AppCompatActivity {
 		switch_Chats.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked){
+				if (isChecked) {
 					linearLayout_Chats.setVisibility(View.VISIBLE);
-				} else{
+				} else {
 					linearLayout_Chats.setVisibility(View.GONE);
 				}
 			}

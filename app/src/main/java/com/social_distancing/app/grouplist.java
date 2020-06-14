@@ -56,22 +56,22 @@ public class grouplist extends AppCompatActivity {
 		final String listID = getIntent().getStringExtra("listID");
 		final String listName = getIntent().getStringExtra("listName");
 		
-		final TextView textView_listName = (TextView)findViewById(R.id.textView_listName);
+		final TextView textView_listName = (TextView) findViewById(R.id.textView_listName);
 		textView_listName.setText(listName);
 		
-		final ListView listView_Lists = (ListView)findViewById(R.id.listView_Lists);
+		final ListView listView_Lists = (ListView) findViewById(R.id.listView_Lists);
 		
-		Button button_AddItem = (Button)findViewById(R.id.button_AddItem);
-		final EditText editText_NewItem = (EditText)findViewById(R.id.editText_NewItem);
+		Button button_AddItem = (Button) findViewById(R.id.button_AddItem);
+		final EditText editText_NewItem = (EditText) findViewById(R.id.editText_NewItem);
 		
-		final DocumentReference listDocumentReference = (DocumentReference)HelperClass.db.collection(Collections.LISTS).document(listID);
+		final DocumentReference listDocumentReference = (DocumentReference) HelperClass.db.collection(Collections.LISTS).document(listID);
 		listDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 			@Override
 			public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 				Map<String, Object> listData = documentSnapshot.getData();
 				textView_listName.setText(listData.get(Collections.Lists.NAME).toString());
 				
-				if (listData.get(Collections.Lists.ITEMS).equals("") || ((ArrayList<String>)listData.get(Collections.Lists.ITEMS)).size() == 0)
+				if (listData.get(Collections.Lists.ITEMS).equals("") || ((ArrayList<String>) listData.get(Collections.Lists.ITEMS)).size() == 0)
 					return;
 				
 				ArrayList<String> items = (ArrayList<String>) listData.get("Items");

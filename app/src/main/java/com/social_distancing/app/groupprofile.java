@@ -154,7 +154,6 @@ public class groupprofile extends AppCompatActivity {
 					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 						final Intent intent = new Intent(context, userprofile.class);
 						if (HelperClass.auth.getCurrentUser().getUid().equals(usersKeyList.get(position))) {
-							Log.d(LOG.WARNING, "iiiiiiii");
 							return;
 						}
 						

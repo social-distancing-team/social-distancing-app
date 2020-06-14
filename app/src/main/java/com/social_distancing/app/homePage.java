@@ -50,16 +50,16 @@ public class homePage extends AppCompatActivity {
 		setContentView(R.layout.activity_home_page);
 		getSupportActionBar().hide();
 		
-		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
-		final EditText editText_Email = (EditText)findViewById(R.id.editText_Email);
-		final EditText editText_Password = (EditText)findViewById(R.id.editText_Password);
+		final EditText editText_Email = (EditText) findViewById(R.id.editText_Email);
+		final EditText editText_Password = (EditText) findViewById(R.id.editText_Password);
 		
-		final Button button_SignIn = (Button)findViewById(R.id.button_SignIn);
-		final Button button_Register = (Button)findViewById(R.id.button_Register);
-		final Button button_ResetPassword = (Button)findViewById(R.id.button_ResetPassword);
+		final Button button_SignIn = (Button) findViewById(R.id.button_SignIn);
+		final Button button_Register = (Button) findViewById(R.id.button_Register);
+		final Button button_ResetPassword = (Button) findViewById(R.id.button_ResetPassword);
 		
-		final TextView textView_LoginStatus = (TextView)findViewById(R.id.textView_LoginStatus);
+		final TextView textView_LoginStatus = (TextView) findViewById(R.id.textView_LoginStatus);
 		
 		User.logout();
 		
@@ -75,9 +75,9 @@ public class homePage extends AppCompatActivity {
 				User.login(editText_Email.getText().toString(), editText_Password.getText().toString()).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 					@Override
 					public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-						if (task.isSuccessful() && task.isSuccessful() && task.getResult() != null){
+						if (task.isSuccessful() && task.isSuccessful() && task.getResult() != null) {
 							
-							if ((boolean)User.userInfo.get("Deleted")){
+							if ((boolean) User.userInfo.get("Deleted")) {
 								textView_LoginStatus.setText("This user has been deleted.");
 								textView_LoginStatus.setTextColor(Color.RED);
 								textView_LoginStatus.setVisibility(View.VISIBLE);
@@ -120,15 +120,15 @@ public class homePage extends AppCompatActivity {
 				registrationDialog.setMessage("Please enter your details");
 				registrationDialog.setView(registrationView);
 				
-				final EditText editText_FirstName = (EditText)registrationView.findViewById(R.id.editText_FirstName);
-				final EditText editText_LastName = (EditText)registrationView.findViewById(R.id.editText_LastName);
-				final EditText editText_Location = (EditText)registrationView.findViewById(R.id.editText_Location);
-				final EditText editText_Email = (EditText)registrationView.findViewById(R.id.editText_Email);
-				final EditText editText_Password = (EditText)registrationView.findViewById(R.id.editText_Password);
-				final EditText editText_SecurityQuestion = (EditText)registrationView.findViewById(R.id.editText_SecurityQuestion);
-				final EditText editText_SecurityAnswer = (EditText)registrationView.findViewById(R.id.editText_SecurityAnswer);
+				final EditText editText_FirstName = (EditText) registrationView.findViewById(R.id.editText_FirstName);
+				final EditText editText_LastName = (EditText) registrationView.findViewById(R.id.editText_LastName);
+				final EditText editText_Location = (EditText) registrationView.findViewById(R.id.editText_Location);
+				final EditText editText_Email = (EditText) registrationView.findViewById(R.id.editText_Email);
+				final EditText editText_Password = (EditText) registrationView.findViewById(R.id.editText_Password);
+				final EditText editText_SecurityQuestion = (EditText) registrationView.findViewById(R.id.editText_SecurityQuestion);
+				final EditText editText_SecurityAnswer = (EditText) registrationView.findViewById(R.id.editText_SecurityAnswer);
 				
-
+				
 				registrationDialog.setPositiveButton("Done", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -139,13 +139,6 @@ public class homePage extends AppCompatActivity {
 						final String password = editText_Password.getText().toString();
 						final String securityQuestion = editText_SecurityQuestion.getText().toString();
 						final String securityAnswer = editText_SecurityAnswer.getText().toString();
-						
-						Log.d(LOG.INFORMATION, "REGISTER: firstname->" + firstName);
-						Log.d(LOG.INFORMATION, "REGISTER: lastname->" + lastName);
-						
-						Log.d(LOG.INFORMATION, "REGISTER: email->" + email);
-						Log.d(LOG.INFORMATION, "REGISTER: password->" + password);
-						
 						
 						HelperClass.auth.createUserWithEmailAndPassword(email, password)
 								.addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -166,12 +159,12 @@ public class homePage extends AppCompatActivity {
 																startActivity(k);
 																finish();
 															}
-
+															
 														}
 													});
 												}
 											});
-
+											
 										} else {
 											button_SignIn.setEnabled(true);
 											button_Register.setEnabled(true);

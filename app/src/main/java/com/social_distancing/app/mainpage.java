@@ -1,7 +1,7 @@
 /*
-*	Project:		Remote Life
-* 	Last edited:	13/06/2020
-* 	Author:			Karan Bajwa
+ *	Project:		Remote Life
+ * 	Last edited:	13/06/2020
+ * 	Author:			Karan Bajwa
  */
 
 package com.social_distancing.app;
@@ -144,7 +144,7 @@ public class mainpage extends AppCompatActivity {
 						}
 						
 						//Check to make sure we're not already friends with the user
-						if (User.friendInfo.containsKey(friendID)){
+						if (User.friendInfo.containsKey(friendID)) {
 							Toast.makeText(context, "You are already friends with this user.", Toast.LENGTH_SHORT).show();
 							return;
 						}
@@ -167,10 +167,12 @@ public class mainpage extends AppCompatActivity {
 											public void onComplete(@NonNull Task<Void> task) {
 												//Check if the task was sucessful and that the result
 												//is non null as the function is using continuation
-												if (task.isSuccessful() && task.getResult() != null) {
+												if (task.isSuccessful()) {
 													Toast.makeText(context, "Successfully added a new friend.", Toast.LENGTH_SHORT).show();
 												} else {
 													Toast.makeText(context, "Error adding friend.\n", Toast.LENGTH_SHORT).show();
+													Log.d(LOG.WARNING, "task.isSuccessful == " + Boolean.toString(task.isSuccessful()));
+													Log.d(LOG.WARNING, "task Result == " + task.getResult());
 												}
 											}
 										});
@@ -378,11 +380,13 @@ public class mainpage extends AppCompatActivity {
 										if (task.isSuccessful()) {
 											DocumentSnapshot friendDocumentSnapshot = (DocumentSnapshot) task.getResult();
 											if (friendDocumentSnapshot.exists()) {
-												Task<Void> addFriendTask = User.removeFriend(friendID);
-												addFriendTask.addOnCompleteListener(new OnCompleteListener<Void>() {
+												Task<Void> removeFriendTask = User.removeFriend(friendID);
+												removeFriendTask.addOnCompleteListener(new OnCompleteListener<Void>() {
 													@Override
 													public void onComplete(@NonNull Task<Void> task) {
 														if (task.isSuccessful()) {
+															User.friendInfo.remove(friendID);
+															User.friends.remove(friendID);
 															Toast.makeText(context, "Successfully unfriended " + friendsNameList.get(position).toString() + ".", Toast.LENGTH_SHORT).show();
 														} else {
 															Toast.makeText(context, "Error removing friend.\n" + task.getException().toString(), Toast.LENGTH_SHORT).show();

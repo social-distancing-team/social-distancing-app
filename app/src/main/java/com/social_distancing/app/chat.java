@@ -77,9 +77,9 @@ public class chat extends AppCompatActivity {
 		setContentView(R.layout.activity_chat);
 		getSupportActionBar().hide();
 		
-		final LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
-		final LinearLayout rootLayout = (LinearLayout)findViewById(R.id.rootLayout);
+		final LinearLayout rootLayout = (LinearLayout) findViewById(R.id.rootLayout);
 		
 		//Get the chat ID of the chat we want to read
 		final String chatID = getIntent().getStringExtra("chatID");
@@ -95,21 +95,21 @@ public class chat extends AppCompatActivity {
 				
 				Log.d(LOG.INFORMATION, "Got chat data: " + data.toString());
 				
-				final LinearLayout rootLayout = (LinearLayout)findViewById(R.id.rootLayout);
-				final TextView lastActive = (TextView)findViewById(R.id.lastActive);
-				final TextView chatName = (TextView)findViewById(R.id.chatName);
-				final LinearLayout chatLayout = (LinearLayout)findViewById(R.id.chatLayout);
+				final LinearLayout rootLayout = (LinearLayout) findViewById(R.id.rootLayout);
+				final TextView lastActive = (TextView) findViewById(R.id.lastActive);
+				final TextView chatName = (TextView) findViewById(R.id.chatName);
+				final LinearLayout chatLayout = (LinearLayout) findViewById(R.id.chatLayout);
 				
 				chatName.setText(username);
 				if (data.get(Collections.Chat.MESSAGES).toString().equals(""))
 					return;
 				
 				//Get a list of all the messages
-				final ArrayList<String> messages = (ArrayList<String>)data.get(Collections.Chat.MESSAGES);
+				final ArrayList<String> messages = (ArrayList<String>) data.get(Collections.Chat.MESSAGES);
 				ArrayList<Task<DocumentSnapshot>> tasks = new ArrayList<>();
 				
 				//For each message
-				for (String message : messages){
+				for (String message : messages) {
 					//If a view for the message has already been created, let's skip it
 					if (messageViews.containsKey(message))
 						continue;
@@ -140,7 +140,7 @@ public class chat extends AppCompatActivity {
 							newMessageView.setOnLongClickListener(new View.OnLongClickListener() {
 								@Override
 								public boolean onLongClick(View v) {
-									if (HelperClass.auth.getCurrentUser().getUid().toString().equals(data.get(Collections.Message.USERID).toString())){
+									if (HelperClass.auth.getCurrentUser().getUid().toString().equals(data.get(Collections.Message.USERID).toString())) {
 										final AlertDialog.Builder deleteMessageDialog = new AlertDialog.Builder(context);
 										deleteMessageDialog.setTitle("Delete message");
 										deleteMessageDialog.setMessage("Are you sure you want to delete this message?");
@@ -151,13 +151,13 @@ public class chat extends AppCompatActivity {
 											public void onClick(DialogInterface dialog, int which) {
 												final DocumentReference chatDocument = HelperClass.db.collection(Collections.CHATS).document(chatID);
 												
-												Map<String, Object>  chatData = new HashMap<>();
+												Map<String, Object> chatData = new HashMap<>();
 												chatData.put(Collections.Chat.MESSAGES, FieldValue.arrayRemove(documentSnapshot.getId()));
 												
 												chatDocument.update(chatData).addOnCompleteListener(new OnCompleteListener<Void>() {
 													@Override
 													public void onComplete(@NonNull Task<Void> task) {
-														if (task.isSuccessful()){
+														if (task.isSuccessful()) {
 															newMessageView.setVisibility(View.GONE);
 														}
 													}
@@ -177,17 +177,17 @@ public class chat extends AppCompatActivity {
 							newMessageView.setOnClickListener(new View.OnClickListener() {
 								@Override
 								public void onClick(View v) {
-									if (data.containsKey("sendingUserID") && HelperClass.auth.getCurrentUser().getUid().toString().equals(data.get("sendingUserID").toString())){
+									if (data.containsKey("sendingUserID") && HelperClass.auth.getCurrentUser().getUid().toString().equals(data.get("sendingUserID").toString())) {
 										final AlertDialog.Builder deditMessageDialog = new AlertDialog.Builder(context);
 										deditMessageDialog.setTitle("Edit message");// + listView_Friends.getItemAtPosition(position).toString() + "?");
 										
 										final EditText messageText = new EditText(context);
-										LinearLayout newMessageLayout = (LinearLayout)newMessageView.findViewById(R.id.messageLayout);
-										final TextView messageContent = (TextView)newMessageLayout.findViewById(R.id.messageContent);
-										TextView messageTimestamp = (TextView)newMessageLayout.findViewById(R.id.messageTimestamp);
+										LinearLayout newMessageLayout = (LinearLayout) newMessageView.findViewById(R.id.messageLayout);
+										final TextView messageContent = (TextView) newMessageLayout.findViewById(R.id.messageContent);
+										TextView messageTimestamp = (TextView) newMessageLayout.findViewById(R.id.messageTimestamp);
 										
 										messageText.setText(messageContent.getText());
-										messageText.setPadding(10,0,0,0);
+										messageText.setPadding(10, 0, 0, 0);
 										
 										deditMessageDialog.setView(messageText);
 										
@@ -195,7 +195,7 @@ public class chat extends AppCompatActivity {
 										deditMessageDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 											@Override
 											public void onClick(DialogInterface dialog, int which) {
-												if (messageText.getText().toString().equals("")){
+												if (messageText.getText().toString().equals("")) {
 													newMessageView.setVisibility(View.GONE);
 												} else {
 													messageContent.setText(messageText.getText().toString());
@@ -209,30 +209,30 @@ public class chat extends AppCompatActivity {
 								}
 							});
 							
-							LinearLayout newMessageLayout = (LinearLayout)newMessageView.findViewById(R.id.messageLayout);
-							TextView messageContent = (TextView)newMessageLayout.findViewById(R.id.messageContent);
-							TextView messageTimestamp = (TextView)newMessageLayout.findViewById(R.id.messageTimestamp);
+							LinearLayout newMessageLayout = (LinearLayout) newMessageView.findViewById(R.id.messageLayout);
+							TextView messageContent = (TextView) newMessageLayout.findViewById(R.id.messageContent);
+							TextView messageTimestamp = (TextView) newMessageLayout.findViewById(R.id.messageTimestamp);
 							
 							messageContent.setText(data.get(Collections.Message.CONTENT).toString());
-							if (data.get(Collections.Message.TIMESTAMP)!=null)
-								messageTimestamp.setText(sfd2.format(((Timestamp)data.get(Collections.Message.TIMESTAMP)).toDate()));
+							if (data.get(Collections.Message.TIMESTAMP) != null)
+								messageTimestamp.setText(sfd2.format(((Timestamp) data.get(Collections.Message.TIMESTAMP)).toDate()));
 							
 							final String userID = HelperClass.auth.getCurrentUser().getUid().toString();
 							
 							//If we sent the message, set the background to green and place message to the right
-							if (data.get(Collections.Message.USERID).toString().equals(userID)){
+							if (data.get(Collections.Message.USERID).toString().equals(userID)) {
 								newMessageLayout.setBackgroundColor(Color.argb(0.1f, 0.0f, 1.0f, 0.0f));
-								LinearLayout.LayoutParams layoutParams =  new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+								LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 								layoutParams.gravity = Gravity.RIGHT;
 								newMessageLayout.setLayoutParams(layoutParams);
 							} else { //If another user sent the message, set background to red and place message to the left.
 								newMessageLayout.setBackgroundColor(Color.argb(0.1f, 1, 0.0f, 0.0f));
-								LinearLayout.LayoutParams layoutParams =  new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+								LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 								layoutParams.gravity = Gravity.LEFT;
 								newMessageLayout.setLayoutParams(layoutParams);
 							}
 							
-							final ScrollView chatScrollView = (ScrollView)findViewById(R.id.chatScrollView);
+							final ScrollView chatScrollView = (ScrollView) findViewById(R.id.chatScrollView);
 							
 							//If a new message view has been created, scroll the messages to the bottom
 							if (newMessage) {
@@ -246,9 +246,9 @@ public class chat extends AppCompatActivity {
 			}
 		});
 		
-		final EditText editText = (EditText)findViewById(R.id.enterMessage);
-		Button sendMessage = (Button)findViewById(R.id.sendMessage);
-		final ScrollView chatScrollView = (ScrollView)findViewById(R.id.chatScrollView);
+		final EditText editText = (EditText) findViewById(R.id.enterMessage);
+		Button sendMessage = (Button) findViewById(R.id.sendMessage);
+		final ScrollView chatScrollView = (ScrollView) findViewById(R.id.chatScrollView);
 		
 		//When the Send button is clicked
 		sendMessage.setOnClickListener(new View.OnClickListener() {
@@ -272,7 +272,7 @@ public class chat extends AppCompatActivity {
 				documentReference.set(data).addOnCompleteListener(new OnCompleteListener<Void>() {
 					@Override
 					public void onComplete(@NonNull Task<Void> task) {
-						if (task.isSuccessful()){
+						if (task.isSuccessful()) {
 							final Map<String, Object> map = new HashMap<>();
 							map.put(Collections.Chat.MESSAGES, FieldValue.arrayUnion(documentReference.getId()));
 							

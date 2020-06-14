@@ -7,6 +7,7 @@
 package com.social_distancing.app;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -49,7 +50,7 @@ public class HelperClass {
 	/**
 	 * Class for logging tags.
 	 */
-	public static class LOG{
+	public static class LOG {
 		public static String ERROR = "ERROR";
 		public static String SUCCESS = "SUCCESS";
 		public static String WARNING = "WARNING";
@@ -60,7 +61,7 @@ public class HelperClass {
 	/**
 	 * Class containing the Firebase collections and document member definitions.
 	 */
-	public static class Collections{
+	public static class Collections {
 		public static String USERS = "Users";
 		public static String LISTS = "Lists";
 		public static String CHATS = "Chats";
@@ -69,7 +70,7 @@ public class HelperClass {
 		public static String USERGROUPS = "UserGroups";
 		public static String USERCHATS = "UserChats";
 		
-		public static class Users{
+		public static class Users {
 			public static String DELETED = "Deleted";
 			public static String FIRSTNAME = "FirstName";
 			public static String LASTNAME = "LastName";
@@ -81,26 +82,26 @@ public class HelperClass {
 			public static String SECURITYANSWER = "SecurityAnswer";
 		}
 		
-		public static class Lists{
+		public static class Lists {
 			public static String NAME = "Name";
 			public static String ITEMS = "Items";
 		}
 		
-		public static class Chat{
+		public static class Chat {
 			public static String NAME = "Name";
 			public static String USERS = "Users";
 			public static String MESSAGES = "Messages";
 			public static String LASTMESSAGETIMESTAMP = "LastMessageTimestamp";
 		}
 		
-		public static class Message{
+		public static class Message {
 			public static String CHATID = "ChatID";
 			public static String CONTENT = "Content";
 			public static String USERID = "sendingUserID";
 			public static String TIMESTAMP = "timestamp";
 		}
 		
-		public static class Group{
+		public static class Group {
 			public static String CHAT = "Chat";
 			public static String LISTS = "Lists";
 			public static String NAME = "Name";
@@ -108,11 +109,11 @@ public class HelperClass {
 			public static String USERS = "Users";
 		}
 		
-		public static class UserGroup{
+		public static class UserGroup {
 			public static String GROUPS = "Groups";
 		}
 		
-		public static class UserChat{
+		public static class UserChat {
 			public static String SINGLECHATS = "SingleChats";
 		}
 	}
@@ -160,13 +161,14 @@ public class HelperClass {
 		
 		
 		/**
-		 *Initialised basically means if we have logged in to Firebase.
+		 * Initialised basically means if we have logged in to Firebase.
 		 */
 		public static boolean initiliased = false;
 		
 		
 		/**
 		 * Checks if the device user is logged into any account in the Firebase database.
+		 *
 		 * @return Boolean depending on whether the user is logged in or not.
 		 */
 		public static boolean isLoggedIn() {
@@ -175,14 +177,15 @@ public class HelperClass {
 		
 		/**
 		 * Logs the user out of the Firebase database.
+		 *
 		 * @return A Boolean depending on whether the action completed successfully.
 		 */
 		public static boolean logout() {
 			if (isLoggedIn()) {
 				
 				//Remove all the Firebase document listeners
-				for (String key : listenerRegistrationMap.keySet()){
-					((ListenerRegistration)listenerRegistrationMap.get(key)).remove();
+				for (String key : listenerRegistrationMap.keySet()) {
+					((ListenerRegistration) listenerRegistrationMap.get(key)).remove();
 				}
 				
 				auth.signOut();
@@ -208,7 +211,8 @@ public class HelperClass {
 		
 		/**
 		 * Login to the Firebase database.
-		 * @param email Account email
+		 *
+		 * @param email    Account email
 		 * @param password Account password
 		 * @return A Task with a snapshot of the users information document.
 		 */
@@ -250,10 +254,11 @@ public class HelperClass {
 		
 		/**
 		 * Get the information of the currently logged in user.
+		 *
 		 * @param currentUserID The Unique ID of the user logged in.
 		 * @return A Task with a snapshot of the users information document.
 		 */
-		private static Task<DocumentSnapshot> getUserInfo(String currentUserID){
+		private static Task<DocumentSnapshot> getUserInfo(String currentUserID) {
 			Log.d(HelperClass.LOG.INFORMATION, "Getting user info.");
 			return db.collection(Collections.USERS).document(currentUserID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
 				@Override
@@ -262,7 +267,7 @@ public class HelperClass {
 					if (task.isSuccessful()) {
 						DocumentSnapshot documentSnapshot = (DocumentSnapshot) task.getResult();
 						//Make sure that the document we want to get information from actually exists
-						if (!documentSnapshot.exists()){
+						if (!documentSnapshot.exists()) {
 							Log.d(LOG.ERROR, "user doucment not found");
 							return;
 						}
@@ -292,7 +297,7 @@ public class HelperClass {
 		/**
 		 * Setup Firebase database listeners for the users profile, users groups and users chats.
 		 */
-		public static void setupListeners(){
+		public static void setupListeners() {
 			String userID = auth.getCurrentUser().getUid().toString();
 			
 			DocumentReference userInfoReference = db.collection(Collections.USERS).document(userID);
@@ -307,22 +312,22 @@ public class HelperClass {
 					userInfo.putAll(documentSnapshot.getData());
 					
 					List<Task<?>> getFriendUserInfoTasks = new ArrayList<>();
-					if (!documentSnapshot.get(Collections.Users.FRIENDS).toString().equals("")){
+					if (!documentSnapshot.get(Collections.Users.FRIENDS).toString().equals("")) {
 						friends.clear();
-						friends.addAll((ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS));
+						friends.addAll((ArrayList<String>) documentSnapshot.get(Collections.Users.FRIENDS));
 						
-						final ArrayList<String> friends = (ArrayList<String>)documentSnapshot.get(Collections.Users.FRIENDS);
+						final ArrayList<String> friends = (ArrayList<String>) documentSnapshot.get(Collections.Users.FRIENDS);
 						Log.d(LOG.INFORMATION, "Friends: " + friends.toString());
 						
-						for (String friend : friends){
-							if (!friendInfo.containsKey(friend)){
-								DocumentReference friendDocumentReference = (DocumentReference)db.collection(Collections.USERS).document(friend);
+						for (String friend : friends) {
+							if (!friendInfo.containsKey(friend)) {
+								DocumentReference friendDocumentReference = (DocumentReference) db.collection(Collections.USERS).document(friend);
 								
 								friendDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 									@Override
 									public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 										friendInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
-										for (String key : friendInfoRunnables.keySet()){
+										for (String key : friendInfoRunnables.keySet()) {
 											Runnable runnable = friendInfoRunnables.get(key);
 											if (runnable != null)
 												runnable.run();
@@ -335,7 +340,7 @@ public class HelperClass {
 						}
 					}
 					
-					for (String key : userInfoRunnables.keySet()){
+					for (String key : userInfoRunnables.keySet()) {
 						Runnable runnable = userInfoRunnables.get(key);
 						if (runnable != null)
 							runnable.run();
@@ -344,16 +349,16 @@ public class HelperClass {
 					Tasks.whenAllComplete(getFriendUserInfoTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
 						@Override
 						public void onComplete(@NonNull Task<List<Task<?>>> task) {
-							List<Task<?>> taskList = (List<Task<?>>)task.getResult();
-							for (Task friendInfoTask : taskList){
-								if (friendInfoTask.isSuccessful()){
-									DocumentSnapshot friendUserSnapshot = (DocumentSnapshot)friendInfoTask.getResult();
+							List<Task<?>> taskList = (List<Task<?>>) task.getResult();
+							for (Task friendInfoTask : taskList) {
+								if (friendInfoTask.isSuccessful()) {
+									DocumentSnapshot friendUserSnapshot = (DocumentSnapshot) friendInfoTask.getResult();
 									//userNames.put(documentSnapshot1.getId(), documentSnapshot1.get("FirstName") + " " + documentSnapshot1.get("LastName"));
-									friendInfo.put(friendUserSnapshot.getId(),  friendUserSnapshot.getData());
+									friendInfo.put(friendUserSnapshot.getId(), friendUserSnapshot.getData());
 								}
 							}
 							
-							for (String key : userInfoRunnables.keySet()){
+							for (String key : userInfoRunnables.keySet()) {
 								Runnable runnable = userInfoRunnables.get(key);
 								if (runnable != null)
 									runnable.run();
@@ -374,23 +379,23 @@ public class HelperClass {
 					if (documentSnapshot.get(Collections.UserGroup.GROUPS).toString().equals(""))
 						return;
 					
-					groups.addAll((ArrayList)documentSnapshot.get(Collections.UserGroup.GROUPS));
+					groups.addAll((ArrayList) documentSnapshot.get(Collections.UserGroup.GROUPS));
 					
-					ArrayList<String> groups = (ArrayList)documentSnapshot.get(Collections.UserGroup.GROUPS);
+					ArrayList<String> groups = (ArrayList) documentSnapshot.get(Collections.UserGroup.GROUPS);
 					
 					Log.d(LOG.INFORMATION, "Group IDs: " + groups.toString());
 					
 					List<Task<?>> getGroupInfoTasks = new ArrayList<>();
-					for (String group : groups){
-						if (!groupInfo.containsKey(group) /*|| true*/){
-							DocumentReference groupDocumentReference = (DocumentReference)db.collection(Collections.GROUPS).document(group);
+					for (String group : groups) {
+						if (!groupInfo.containsKey(group) /*|| true*/) {
+							DocumentReference groupDocumentReference = (DocumentReference) db.collection(Collections.GROUPS).document(group);
 							//getGroupInfoTasks.add(groupDocumentReference.get());
 							
 							groupDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
 								@Override
 								public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 									groupInfo.put(documentSnapshot.getId(), documentSnapshot.getData());
-									for (String key : groupInfoRunnables.keySet()){
+									for (String key : groupInfoRunnables.keySet()) {
 										Runnable runnable = groupInfoRunnables.get(key);
 										if (runnable != null)
 											runnable.run();
@@ -404,15 +409,15 @@ public class HelperClass {
 					Tasks.whenAllComplete(getGroupInfoTasks).addOnCompleteListener(new OnCompleteListener<List<Task<?>>>() {
 						@Override
 						public void onComplete(@NonNull Task<List<Task<?>>> task) {
-							List<Task<?>> taskList = (List<Task<?>>)task.getResult();
-							for (Task groupInfotask : taskList){
-								if (groupInfotask.isSuccessful()){
-									DocumentSnapshot groupSnapshot = (DocumentSnapshot)groupInfotask.getResult();
-									groupInfo.put(groupSnapshot.getId(),  groupSnapshot.getData());
+							List<Task<?>> taskList = (List<Task<?>>) task.getResult();
+							for (Task groupInfotask : taskList) {
+								if (groupInfotask.isSuccessful()) {
+									DocumentSnapshot groupSnapshot = (DocumentSnapshot) groupInfotask.getResult();
+									groupInfo.put(groupSnapshot.getId(), groupSnapshot.getData());
 								}
 							}
 							
-							for (String key : groupInfoRunnables.keySet()){
+							for (String key : groupInfoRunnables.keySet()) {
 								Runnable runnable = groupInfoRunnables.get(key);
 								if (runnable != null)
 									runnable.run();
@@ -429,7 +434,7 @@ public class HelperClass {
 					chats.clear();
 					if (documentSnapshot.get(Collections.UserChat.SINGLECHATS).toString().equals(""))
 						return;
-					chats.putAll((Map<String, String>)documentSnapshot.get(Collections.UserChat.SINGLECHATS));
+					chats.putAll((Map<String, String>) documentSnapshot.get(Collections.UserChat.SINGLECHATS));
 				}
 			});
 			
@@ -440,10 +445,11 @@ public class HelperClass {
 		
 		/**
 		 * Add friend.
+		 *
 		 * @param friendID User ID of the person to add as a friend
 		 * @return Task
 		 */
-		public static Task<Void> addFriend(final String friendID){
+		public static Task<Void> addFriend(final String friendID) {
 			DocumentReference userReference = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 			DocumentReference friendReference = db.collection(Collections.USERS).document(friendID);
 			
@@ -458,9 +464,10 @@ public class HelperClass {
 			return addFriendTask.continueWithTask(new Continuation<Void, Task<Void>>() {
 				@Override
 				public Task<Void> then(@NonNull Task<Void> task) throws Exception {
-					if (task.isSuccessful()){
+					if (task.isSuccessful()) {
 						return addFriendTask2;
 					} else {
+						Log.d(LOG.ERROR, "Error adding friend: " + task.getException());
 						return Tasks.forResult(null);
 					}
 				}
@@ -469,10 +476,11 @@ public class HelperClass {
 		
 		/**
 		 * Remove friend.
+		 *
 		 * @param friendID User ID of the person to remove as a friend
 		 * @return Task
 		 */
-		public static Task<Void> removeFriend(String friendID){
+		public static Task<Void> removeFriend(String friendID) {
 			DocumentReference userReference = db.collection(Collections.USERS).document(auth.getCurrentUser().getUid());
 			DocumentReference friendReference = db.collection(Collections.USERS).document(friendID);
 			
@@ -492,11 +500,12 @@ public class HelperClass {
 	
 	/**
 	 * Create a new group.
-	 * @param name Name of the group
+	 *
+	 * @param name  Name of the group
 	 * @param users ArrayList of members to be added to the group
 	 * @return
 	 */
-	public static Task<Void> createGroup(String name, ArrayList<String> users){
+	public static Task<Void> createGroup(String name, ArrayList<String> users) {
 		//Create a new chat for the group
 		DocumentReference chatReference = HelperClass.db.collection(Collections.CHATS).document();
 		
@@ -521,8 +530,8 @@ public class HelperClass {
 		chatData.put(Collections.Chat.USERS, users);
 		Task<Void> createChatReference = chatReference.set(chatData);
 		
-		for (String userID : users){
-			DocumentReference userGroupReference = (DocumentReference)HelperClass.db.collection(Collections.USERGROUPS).document(userID);
+		for (String userID : users) {
+			DocumentReference userGroupReference = (DocumentReference) HelperClass.db.collection(Collections.USERGROUPS).document(userID);
 			final Map<String, Object> addGroupMap = new HashMap<>();
 			addGroupMap.put(Collections.USERGROUPS, FieldValue.arrayUnion(groupReference.getId()));
 			Task<Void> addFriendTask = userGroupReference.update(addGroupMap);
@@ -533,19 +542,18 @@ public class HelperClass {
 	}
 	
 	/**
-	 *
-	 * @param userID User ID
-	 * @param firstName First name of user
-	 * @param lastName Last name of user
-	 * @param dateOfBirth Not used
+	 * @param userID           User ID
+	 * @param firstName        First name of user
+	 * @param lastName         Last name of user
+	 * @param dateOfBirth      Not used
 	 * @param location
-	 * @param email	Email account user is registering with
-	 * @param password Not used
+	 * @param email            Email account user is registering with
+	 * @param password         Not used
 	 * @param securityQuestion Security question
-	 * @param answer Security answer
+	 * @param answer           Security answer
 	 * @return Task
 	 */
-	public static Task<Void> createUser(String userID, String firstName, String lastName, String dateOfBirth, String location, String email, String password, String securityQuestion, String answer){
+	public static Task<Void> createUser(String userID, String firstName, String lastName, String dateOfBirth, String location, String email, String password, String securityQuestion, String answer) {
 		DocumentReference newUserReference = db.collection(Collections.USERS).document(userID);
 		DocumentReference newUserChatsReference = db.collection(Collections.USERCHATS).document(userID);
 		DocumentReference newUserGroupsReference = db.collection(Collections.USERGROUPS).document(userID);
